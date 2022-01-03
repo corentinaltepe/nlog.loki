@@ -13,7 +13,7 @@ namespace Benchmark
 
             var summary = BenchmarkRunner.Run(new[]{
                 BenchmarkConverter.TypeToBenchmarks( typeof(Benchmarks), config),
-                BenchmarkConverter.TypeToBenchmarks( typeof(Transport), config)
+                BenchmarkConverter.TypeToBenchmarks( typeof(Transport), config),
             });
         }
     }
