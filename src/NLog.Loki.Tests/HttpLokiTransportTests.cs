@@ -11,12 +11,10 @@ namespace NLog.Loki.Tests;
 
 public class HttpLokiTransportTests
 {
-    [Test]
-    public async Task SerializeMessageToHttpLoki()
+    private static List<LokiEvent> CreateLokiEvents()
     {
-        // Prepare the events to be sent to loki
         var date = new DateTime(2021, 12, 27, 9, 48, 26, DateTimeKind.Utc);
-        var events = new List<LokiEvent> {
+        return new List<LokiEvent> {
             new(new LokiLabels(new LokiLabel("env", "unittest"), new LokiLabel("job", "Job1")),
                 date, "Info|Receive message from A with destination B."),
             new(new LokiLabels(new LokiLabel("env", "unittest"), new LokiLabel("job", "Job1")),
@@ -24,6 +22,13 @@ public class HttpLokiTransportTests
             new(new LokiLabels(new LokiLabel("env", "unittest"), new LokiLabel("job", "Job1")),
                 date, "Info|Event from another stream."),
         };
+    }
+
+    [Test]
+    public async Task SerializeMessageToHttpLoki()
+    {
+        // Prepare the events to be sent to loki
+        var events = CreateLokiEvents();
 
         // Configure the ILokiHttpClient such that we intercept the JSON content and simulate an OK response from Loki.
         string serializedJsonMessage = null;
@@ -50,11 +55,7 @@ public class HttpLokiTransportTests
     public async Task SerializeMessageToHttpLokiSingleEvent()
     {
         // Prepare the event to be sent to loki
-        var date = new DateTime(2021, 12, 27, 9, 48, 26, DateTimeKind.Utc);
-        var lokiEvent = new LokiEvent(
-            new LokiLabels(new LokiLabel("env", "unittest"), new LokiLabel("job", "Job1")),
-            new DateTime(2021, 12, 27, 9, 48, 26, DateTimeKind.Utc),
-            "Info|Event from another stream.");
+        var lokiEvent = CreateLokiEvents()[2];
 
         // Configure the ILokiHttpClient such that we intercept the JSON content and simulate an OK response from Loki.
         string serializedJsonMessage = null;
@@ -75,5 +76,17 @@ public class HttpLokiTransportTests
         Assert.AreEqual(
                     "{\"streams\":[{\"stream\":{\"env\":\"unittest\",\"job\":\"Job1\"},\"values\":[[\"1640598506000000000\",\"Info|Event from another stream.\"]]}]}",
                     serializedJsonMessage);
+    }
+
+    [Test]
+    public void ThrowOnHttpClientException() 
+    {
+        throw new NotImplementedException();
+    }
+
+    [Test]
+    public void ThrowOnNonSuccessResponseCode() 
+    {
+        throw new NotImplementedException();
     }
 }
