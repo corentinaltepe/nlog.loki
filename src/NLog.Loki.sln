@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NLog.Loki.Tests", "NLog.Lok
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmark", "Benchmark\Benchmark.csproj", "{0880E1C9-7C30-4EA3-AE34-0CC02B22C628}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Template", "Template\Template.csproj", "{38B6AD69-ECEF-46E4-B2AD-F4D6A9437A02}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{0880E1C9-7C30-4EA3-AE34-0CC02B22C628}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0880E1C9-7C30-4EA3-AE34-0CC02B22C628}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0880E1C9-7C30-4EA3-AE34-0CC02B22C628}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38B6AD69-ECEF-46E4-B2AD-F4D6A9437A02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38B6AD69-ECEF-46E4-B2AD-F4D6A9437A02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38B6AD69-ECEF-46E4-B2AD-F4D6A9437A02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38B6AD69-ECEF-46E4-B2AD-F4D6A9437A02}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
