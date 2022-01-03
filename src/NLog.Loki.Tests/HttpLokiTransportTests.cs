@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Moq;
 using NLog.Loki.Model;
@@ -84,17 +85,29 @@ public class HttpLokiTransportTests
         var httpClient = new Mock<ILokiHttpClient>();
         _ = httpClient
             .Setup(c => c.PostAsync("loki/api/v1/push", It.IsAny<HttpContent>()))
-            .ThrowsAsync(new Exception("Something went wrong whem sendimg HTTP message."));
+            .ThrowsAsync(new Exception("Something went wrong whem sending HTTP message."));
         
         // Send the logging request
         var transport = new HttpLokiTransport(httpClient.Object);
         var exception = Assert.ThrowsAsync<Exception>(() => transport.WriteLogEventsAsync(CreateLokiEvents()));
-        Assert.AreEqual("Something went wrong whem sendimg HTTP message.", exception.Message);
+        Assert.AreEqual("Something went wrong whem sending HTTP message.", exception.Message);
     }
 
     [Test]
     public void ThrowOnNonSuccessResponseCode() 
     {
-        throw new NotImplementedException();
+        var response = new HttpResponseMessage(HttpStatusCode.Conflict) {
+            Content = JsonContent.Create(new {reason = "A stream must have a least one label."}),
+        };
+        var httpClient = new Mock<ILokiHttpClient>();
+        _ = httpClient
+            .Setup(c => c.PostAsync("loki/api/v1/push", It.IsAny<HttpContent>()))
+            .Returns(Task.FromResult(response));
+        
+        // Send the logging request
+        var transport = new HttpLokiTransport(httpClient.Object);
+        var exception = Assert.ThrowsAsync<HttpRequestException>(() => transport.WriteLogEventsAsync(CreateLokiEvents()));
+        Assert.AreEqual("Failed pushing logs to Loki.", exception.Message);
+        Assert.AreEqual(HttpStatusCode.Conflict, exception.StatusCode);
     }
 }
