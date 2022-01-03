@@ -39,14 +39,13 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
       xsi:type="loki"
       batchSize="200"
       taskDelayMilliseconds="500"
-      queueLimit="10000"
       endpoint="http://localhost:3100"
       username="myusername"
       password="secret"
       layout="${level}|${message}${onexception:|${exception:format=type,message,method:maxInnerExceptionLevel=5:innerFormat=shortType,message,method}}|source=${logger}">
       <!-- Loki requires at least one label associated with the log stream. 
       Make sure you specify at least one label here. -->
-      <label name="level" layout="${level:lowercase=true}" />
+      <label name="app" layout="my-app-name" />
       <label name="server" layout="${hostname:lowercase=true}" />
     </target>
   </targets>
@@ -58,8 +57,25 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 </nlog>
 ```
 
-The `@endpoint` attribute is a [Layout](https://github.com/NLog/NLog/wiki/Layouts) that must ultimately resolve to a fully-qualified absolute URL of the Loki Server when running in a [Single Proccess Mode](https://grafana.com/docs/loki/latest/overview/#modes-of-operation) or of the Loki Distributor when running in [Microservices Mode](https://grafana.com/docs/loki/latest/overview/#distributor). When an invalid URI is encountered, all log messages are silently discarded.
+`endpoint` must resolve to a fully-qualified absolute URL of the Loki Server when running in a [Single Proccess Mode](https://grafana.com/docs/loki/latest/overview/#modes-of-operation) or of the Loki Distributor when running in [Microservices Mode](https://grafana.com/docs/loki/latest/overview/#distributor).
 
 `username` and `password` are optional fields, used for basic authentication with Loki.
 
 `label` elements can be used to enrich messages with additional [labels](https://grafana.com/docs/loki/latest/design-documents/labels/). `label/@layout` support usual NLog layout renderers.
+
+### Async Target
+`NLog.Loki` is an [async target](https://github.com/NLog/NLog/wiki/How-to-write-a-custom-async-target#asynctasktarget-features). You should **not** wrap it in an [AsyncWrapper target](https://github.com/NLog/NLog/wiki/AsyncWrapper-target). The following configuration options are supported. Make sure to adjust them to the expected throughput and criticality of your application's logs, especially the batch size, retry count and task delay.
+
+`taskTimeoutSeconds` - How many seconds a Task is allowed to run before it is cancelled (default 150 secs).
+
+`retryDelayMilliseconds` - How many milliseconds to wait before next retry (default 500ms, and will be doubled on each retry).
+
+`retryCount` - How many attempts to retry the same Task, before it is aborted (default 0, meaning no retry).
+
+`batchSize` - Gets or sets the number of log events that should be processed in a batch by the lazy writer thread (default 1).
+
+`taskDelayMilliseconds` - How many milliseconds to delay the actual write operation to optimize for batching (default 1 ms).
+
+`queueLimit` - Gets or sets the limit on the number of requests in the lazy writer thread request queue (default 10000).
+
+`overflowAction` - Gets or sets the action to be taken when the lazy writer thread request queue count exceeds the set limit (default Discard).
