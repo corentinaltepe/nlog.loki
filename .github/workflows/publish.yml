@@ -2,17 +2,15 @@ name: Publish
 
 on:
   push:
-    branches:
-      - release
+    tags:
+      - "*"
 
 jobs:
   build:
     env:
-      # Nuget package version. Change it to publish a new version.
-      version: 1.0.9
-
+      # Nuget package version taken from the tag itself
+      version: ${{github.ref_name}}
     name: Publish NuGet Package
-
     runs-on: ubuntu-latest
 
     steps:
