@@ -81,7 +81,15 @@ public class HttpLokiTransportTests
     [Test]
     public void ThrowOnHttpClientException() 
     {
-        throw new NotImplementedException();
+        var httpClient = new Mock<ILokiHttpClient>();
+        _ = httpClient
+            .Setup(c => c.PostAsync("loki/api/v1/push", It.IsAny<HttpContent>()))
+            .ThrowsAsync(new Exception("Something went wrong whem sendimg HTTP message."));
+        
+        // Send the logging request
+        var transport = new HttpLokiTransport(httpClient.Object);
+        var exception = Assert.ThrowsAsync<Exception>(() => transport.WriteLogEventsAsync(CreateLokiEvents()));
+        Assert.AreEqual("Something went wrong whem sendimg HTTP message.", exception.Message);
     }
 
     [Test]
