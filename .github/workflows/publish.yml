@@ -31,3 +31,4 @@ jobs:
         VERSION_STATIC: ${{env.version}}
         NUGET_KEY: ${{secrets.NUGET_KEY}}
         INCLUDE_SYMBOLS: true
+        TAG_COMMIT: false
