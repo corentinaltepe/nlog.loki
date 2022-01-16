@@ -44,7 +44,7 @@ internal class LokiEventsSerializer : JsonConverter<IEnumerable<LokiEvent>>
 
             // TODO: add option with out-of-order by default, but opt-in to enforce ordering
             // https://grafana.com/docs/loki/latest/configuration/#accept-out-of-order-writes
-            foreach(var @event in stream.OrderBy(le => le.Timestamp))
+            foreach(var @event in stream/*.OrderBy(le => le.Timestamp)*/)
             {
                 writer.WriteStartArray();
                 var timestamp = UnixDateTimeConverter.ToUnixTimeNs(@event.Timestamp).ToString("g", CultureInfo.InvariantCulture);

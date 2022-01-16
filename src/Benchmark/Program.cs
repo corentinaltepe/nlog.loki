@@ -12,8 +12,9 @@ namespace Benchmark
               .WithOptions(ConfigOptions.DisableLogFile);
 
             var summary = BenchmarkRunner.Run(new[]{
-                BenchmarkConverter.TypeToBenchmarks( typeof(Benchmarks), config),
-                BenchmarkConverter.TypeToBenchmarks( typeof(Transport), config),
+                //BenchmarkConverter.TypeToBenchmarks(typeof(Benchmarks), config),
+                //BenchmarkConverter.TypeToBenchmarks(typeof(Transport), config),
+                BenchmarkConverter.TypeToBenchmarks(typeof(LokiEventsSerializer), config),
             });
         }
     }

@@ -22,8 +22,8 @@ public class Transport
 
     public Transport()
     {
-        manyLokiEvents = new List<LokiEvent>(1000);
-        for(var i = 0; i < 1000; i++)
+        manyLokiEvents = new List<LokiEvent>(100);
+        for(var i = 0; i < 100; i++)
             manyLokiEvents.Add(new LokiEvent(lokiEvents[0].Labels, DateTime.Now, lokiEvents[0].Line));
     }
 
