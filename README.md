@@ -42,6 +42,7 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
       endpoint="http://localhost:3100"
       username="myusername"
       password="secret"
+      orderWrites="true"
       layout="${level}|${message}${onexception:|${exception:format=type,message,method:maxInnerExceptionLevel=5:innerFormat=shortType,message,method}}|source=${logger}">
       <!-- Loki requires at least one label associated with the log stream. 
       Make sure you specify at least one label here. -->
@@ -60,6 +61,8 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 `endpoint` must resolve to a fully-qualified absolute URL of the Loki Server when running in a [Single Proccess Mode](https://grafana.com/docs/loki/latest/overview/#modes-of-operation) or of the Loki Distributor when running in [Microservices Mode](https://grafana.com/docs/loki/latest/overview/#distributor).
 
 `username` and `password` are optional fields, used for basic authentication with Loki.
+
+`orderWrites` - Orders the logs by timestamp before sending them to loki when logs are batched in a single HTTP call. This is required if you use Loki v2.3 or below. But it is not required if you use Loki v2.4 or above (see [out-of-order writes](https://grafana.com/docs/loki/next/configuration/#accept-out-of-order-writes)). You are strongly advised to set this value to `false` when using Loki v2.4+ since it reduces allocations by about 20% by the serializer (default `true`).
 
 `label` elements can be used to enrich messages with additional [labels](https://grafana.com/docs/loki/latest/design-documents/labels/). `label/@layout` support usual NLog layout renderers.
 

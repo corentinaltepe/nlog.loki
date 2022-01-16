@@ -30,7 +30,7 @@ namespace NLog.Loki
         /// Required as <see langword="true"/> before Loki v2.4. Leave as <see langword="false"/> if you are running Loki v2.4 or above.
         /// See <see href="https://grafana.com/docs/loki/latest/configuration/#accept-out-of-order-writes"/>.
         /// </summary>
-        public bool OrderWrites { get; init; }
+        public bool OrderWrites { get; init; } = true;
 
         [ArrayParameter(typeof(LokiTargetLabel), "label")]
         public IList<LokiTargetLabel> Labels { get; }
