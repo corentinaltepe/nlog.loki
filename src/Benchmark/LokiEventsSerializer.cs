@@ -11,7 +11,8 @@ namespace Benchmark;
 public class LokiEventsSerializer
 {
     private readonly MemoryStream stream = new();
-    private readonly JsonSerializerOptions serializerOptions = new();
+    private readonly JsonSerializerOptions serializerOptionsWithoutOrdering = new();
+    private readonly JsonSerializerOptions serializerOptionsWithOrdering = new();
 
     private readonly LokiEvent @event;
     private readonly IEnumerable<LokiEvent> manyLokiEvents;
@@ -27,22 +28,33 @@ public class LokiEventsSerializer
             events.Add(new LokiEvent(@event.Labels, DateTime.Now, @event.Line));
         manyLokiEvents = events;
 
-        serializerOptions = new JsonSerializerOptions();
-        serializerOptions.Converters.Add(new NLog.Loki.LokiEventsSerializer());
-        serializerOptions.Converters.Add(new NLog.Loki.LokiEventSerializer());
+        serializerOptionsWithoutOrdering = new JsonSerializerOptions();
+        serializerOptionsWithoutOrdering.Converters.Add(new NLog.Loki.LokiEventsSerializer(orderWrites: false));
+        serializerOptionsWithoutOrdering.Converters.Add(new NLog.Loki.LokiEventSerializer());
+
+        serializerOptionsWithOrdering = new JsonSerializerOptions();
+        serializerOptionsWithOrdering.Converters.Add(new NLog.Loki.LokiEventsSerializer(orderWrites: true));
+        serializerOptionsWithOrdering.Converters.Add(new NLog.Loki.LokiEventSerializer());
     }
 
     [Benchmark]
-    public void SerializeManyEvents()
+    public void SerializeManyEventsWithoutOrdering()
     {
         stream.Position = 0;
-        JsonSerializer.Serialize(stream, manyLokiEvents, serializerOptions);
+        JsonSerializer.Serialize(stream, manyLokiEvents, serializerOptionsWithoutOrdering);
+    }
+
+    [Benchmark]
+    public void SerializeManyEventsWithOrdering()
+    {
+        stream.Position = 0;
+        JsonSerializer.Serialize(stream, manyLokiEvents, serializerOptionsWithOrdering);
     }
 
     [Benchmark]
     public void SerializeSingleEvent()
     {
         stream.Position = 0;
-        JsonSerializer.Serialize(stream, @event, serializerOptions);
+        JsonSerializer.Serialize(stream, @event, serializerOptionsWithoutOrdering);
     }
 }

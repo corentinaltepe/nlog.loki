@@ -18,7 +18,7 @@ public class Transport
             DateTime.Now,
             "Info|Receive message from \"A\" with destination \"B\".")};
     private readonly HttpLokiTransport transport = new(new LokiHttpClient(
-        new HttpClient { BaseAddress = new Uri("http://localhost:3100") }));
+        new HttpClient { BaseAddress = new Uri("http://localhost:3100") }), false);
 
     public Transport()
     {

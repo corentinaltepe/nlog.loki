@@ -16,6 +16,13 @@ namespace NLog.Loki;
 /// </remarks>
 internal class LokiEventsSerializer : JsonConverter<IEnumerable<LokiEvent>>
 {
+    private readonly bool orderWrites;
+
+    public LokiEventsSerializer(bool orderWrites)
+    {
+        this.orderWrites = orderWrites;
+    }
+
     public override IEnumerable<LokiEvent> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         throw new NotSupportedException("This converter only supports serializing to JSON.");
@@ -42,9 +49,10 @@ internal class LokiEventsSerializer : JsonConverter<IEnumerable<LokiEvent>>
 
             writer.WriteStartArray("values");
 
-            // TODO: add option with out-of-order by default, but opt-in to enforce ordering
-            // https://grafana.com/docs/loki/latest/configuration/#accept-out-of-order-writes
-            foreach(var @event in stream/*.OrderBy(le => le.Timestamp)*/)
+            // Order logs by timestamp only if the option is opted-in, because it costs
+            // approximately 20% more allocation when serializing 100 events.
+            IEnumerable<LokiEvent> orderedStream = orderWrites ? stream.OrderBy(le => le.Timestamp) : stream;
+            foreach(var @event in orderedStream)
             {
                 writer.WriteStartArray();
                 var timestamp = UnixDateTimeConverter.ToUnixTimeNs(@event.Timestamp).ToString("g", CultureInfo.InvariantCulture);

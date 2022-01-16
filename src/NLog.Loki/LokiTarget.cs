@@ -25,6 +25,13 @@ namespace NLog.Loki
 
         public Layout Password { get; init; }
 
+        /// <summary>
+        /// Orders the logs by timestamp before sending them to Loki.
+        /// Required as <see langword="true"/> before Loki v2.4. Leave as <see langword="false"/> if you are running Loki v2.4 or above.
+        /// See <see href="https://grafana.com/docs/loki/latest/configuration/#accept-out-of-order-writes"/>.
+        /// </summary>
+        public bool OrderWrites { get; init; }
+
         [ArrayParameter(typeof(LokiTargetLabel), "label")]
         public IList<LokiTargetLabel> Labels { get; }
 
@@ -34,10 +41,9 @@ namespace NLog.Loki
         {
             Labels = new List<LokiTargetLabel>();
 
-            lazyLokiTransport =
-                new Lazy<ILokiTransport>(
-                    () => GetLokiTransport(Endpoint, Username, Password),
-                    LazyThreadSafetyMode.ExecutionAndPublication);
+            lazyLokiTransport = new Lazy<ILokiTransport>(
+                () => GetLokiTransport(Endpoint, Username, Password, OrderWrites),
+                LazyThreadSafetyMode.ExecutionAndPublication);
         }
 
         protected override void Write(IList<AsyncLogEventInfo> logEvents)
@@ -65,10 +71,8 @@ namespace NLog.Loki
 
         private LokiEvent GetLokiEvent(LogEventInfo logEvent)
         {
-            var labels =
-                new LokiLabels(
-                    Labels.Select(
-                        ltl => new LokiLabel(ltl.Name, ltl.Layout.Render(logEvent))));
+            var labels = new LokiLabels(
+                Labels.Select(ltl => new LokiLabel(ltl.Name, ltl.Layout.Render(logEvent))));
 
             var line = RenderLogEvent(Layout, logEvent);
 
@@ -77,17 +81,19 @@ namespace NLog.Loki
             return @event;
         }
 
-        internal ILokiTransport GetLokiTransport(Layout endpoint, Layout username, Layout password)
+        internal ILokiTransport GetLokiTransport(
+            Layout endpoint, Layout username, Layout password, bool orderWrites)
         {
             var endpointUri = RenderLogEvent(endpoint, LogEventInfo.CreateNullEvent());
             var usr = RenderLogEvent(username, LogEventInfo.CreateNullEvent());
             var pwd = RenderLogEvent(password, LogEventInfo.CreateNullEvent());
+
             if(Uri.TryCreate(endpointUri, UriKind.Absolute, out var uri))
             {
                 if(uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
                 {
                     var lokiHttpClient = LokiHttpClientFactory(uri, usr, pwd);
-                    var httpLokiTransport = new HttpLokiTransport(lokiHttpClient);
+                    var httpLokiTransport = new HttpLokiTransport(lokiHttpClient, orderWrites);
 
                     return httpLokiTransport;
                 }

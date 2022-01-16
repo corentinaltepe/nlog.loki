@@ -113,7 +113,7 @@ namespace NLog.Loki.Tests
             Environment.SetEnvironmentVariable("HOST", "loki.lvh.me");
 
             var endpoint = Layout.FromString(endpointLayout);
-            var lokiTargetTransport = new LokiTarget().GetLokiTransport(endpoint, null, null);
+            var lokiTargetTransport = new LokiTarget().GetLokiTransport(endpoint, null, null, false);
 
             return lokiTargetTransport.GetType();
         }
