@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <PackageId>CorentinAltepe.NLog.Loki</PackageId>
+    <PackageId>NLog.Targets.Loki</PackageId>
     <Authors>Anton Gogolev, Corentin Altepe</Authors>
     <Company />
     <Product />

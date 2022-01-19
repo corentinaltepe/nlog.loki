@@ -1,7 +1,7 @@
 # NLog Loki Target
 
 ![CI](https://github.com/corentinaltepe/nlog.loki/workflows/CI/badge.svg?branch=master)
-[![NuGet](https://img.shields.io/nuget/v/CorentinAltepe.NLog.Loki)](https://www.nuget.org/packages/CorentinAltepe.NLog.Loki)
+[![NuGet](https://img.shields.io/nuget/v/NLog.Targets.Loki)](https://www.nuget.org/packages/NLog.Targets.Loki)
 [![codecov](https://codecov.io/gh/corentinaltepe/nlog.loki/branch/master/graph/badge.svg?token=84N5XB4J09)](https://codecov.io/gh/corentinaltepe/nlog.loki)
 
 This is an [NLog](https://nlog-project.org/) target that sends messages to [Loki](https://grafana.com/oss/loki/) using Loki's HTTP Push API.
@@ -10,15 +10,15 @@ This is an [NLog](https://nlog-project.org/) target that sends messages to [Loki
 
 ## Installation
 
-The NLog.Loki NuGet package can be found [here](https://www.nuget.org/packages/CorentinAltepe.NLog.Loki). You can install it via one of the following commands below:
+The NLog.Loki NuGet package can be found [here](https://www.nuget.org/packages/NLog.Targets.Loki). You can install it via one of the following commands below:
 
 NuGet command:
 
-    Install-Package CorentinAltepe.NLog.Loki
+    Install-Package NLog.Targets.Loki
 
 .NET Core CLI command:
 
-    dotnet add package CorentinAltepe.NLog.Loki
+    dotnet add package NLog.Targets.Loki
 
 ## Usage
 
