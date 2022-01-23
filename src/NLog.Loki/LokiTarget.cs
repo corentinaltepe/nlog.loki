@@ -19,18 +19,18 @@ namespace NLog.Loki
         private readonly Lazy<ILokiTransport> lazyLokiTransport;
 
         [RequiredParameter]
-        public Layout Endpoint { get; init; }
+        public Layout Endpoint { get; set; }
 
-        public Layout Username { get; init; }
+        public Layout Username { get; set; }
 
-        public Layout Password { get; init; }
+        public Layout Password { get; set; }
 
         /// <summary>
         /// Orders the logs by timestamp before sending them to Loki.
         /// Required as <see langword="true"/> before Loki v2.4. Leave as <see langword="false"/> if you are running Loki v2.4 or above.
         /// See <see href="https://grafana.com/docs/loki/latest/configuration/#accept-out-of-order-writes"/>.
         /// </summary>
-        public bool OrderWrites { get; init; } = true;
+        public bool OrderWrites { get; set; } = true;
 
         [ArrayParameter(typeof(LokiTargetLabel), "label")]
         public IList<LokiTargetLabel> Labels { get; }
