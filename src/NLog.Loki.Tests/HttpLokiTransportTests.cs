@@ -136,6 +136,6 @@ public class HttpLokiTransportTests
         var transport = new HttpLokiTransport(httpClient.Object, false);
         var exception = Assert.ThrowsAsync<HttpRequestException>(() => transport.WriteLogEventsAsync(CreateLokiEvents()));
         Assert.AreEqual("Failed pushing logs to Loki.", exception.Message);
-        Assert.AreEqual(HttpStatusCode.Conflict, exception.StatusCode);
+        Assert.Null(exception.StatusCode);
     }
 }
