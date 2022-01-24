@@ -50,7 +50,12 @@ namespace NLog.Loki
 
             InternalLogger.Error("Failed pushing logs to Loki. Code: {Code}. Reason: {Reason}. Message: {Message}.",
                 response.StatusCode, response.ReasonPhrase, content);
-            throw new HttpRequestException("Failed pushing logs to Loki.");
+            
+            #if NET6_0_OR_GREATER
+                throw new HttpRequestException("Failed pushing logs to Loki.", inner: null, response.StatusCode);
+            #else
+                throw new HttpRequestException("Failed pushing logs to Loki.");
+            #endif
         }
     }
 }

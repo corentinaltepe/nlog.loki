@@ -138,7 +138,7 @@ public class HttpLokiTransportTests
         Assert.AreEqual("Failed pushing logs to Loki.", exception.Message);
         
         #if NET6_0_OR_GREATER
-        Assert.Null(exception.StatusCode);
+            Assert.AreEqual(HttpStatusCode.Conflict, exception.StatusCode);
         #endif
     }
 }
