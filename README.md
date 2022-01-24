@@ -4,7 +4,7 @@
 [![NuGet](https://img.shields.io/nuget/v/NLog.Targets.Loki)](https://www.nuget.org/packages/NLog.Targets.Loki)
 [![codecov](https://codecov.io/gh/corentinaltepe/nlog.loki/branch/master/graph/badge.svg?token=84N5XB4J09)](https://codecov.io/gh/corentinaltepe/nlog.loki)
 
-This is an [NLog](https://nlog-project.org/) target that sends messages to [Loki](https://grafana.com/oss/loki/) using Loki's HTTP Push API.
+This is an [NLog](https://nlog-project.org/) target that sends messages to [Loki](https://grafana.com/oss/loki/) using Loki's HTTP Push API. Available on .NET Standard 2.0 (.NET Core 2.0 and .NET Framework 4.6.1, above).
 
 > Loki is a horizontally-scalable, highly-available, multi-tenant log aggregation system inspired by Prometheus. It is designed to be very cost effective and easy to operate.
 
