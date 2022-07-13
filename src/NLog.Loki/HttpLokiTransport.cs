@@ -25,6 +25,7 @@ internal sealed class HttpLokiTransport : ILokiTransport
     {
         _lokiHttpClient = lokiHttpClient;
         _gzipLevel = gzipLevel;
+        
         _jsonOptions = new JsonSerializerOptions();
         _jsonOptions.Converters.Add(new LokiEventsSerializer(orderWrites));
         _jsonOptions.Converters.Add(new LokiEventSerializer());
