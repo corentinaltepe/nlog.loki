@@ -44,7 +44,10 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
       password="secret"
       orderWrites="true"
       compressionLevel="noCompression"
-      layout="${level}|${message}${onexception:|${exception:format=type,message,method:maxInnerExceptionLevel=5:innerFormat=shortType,message,method}}|source=${logger}">
+      layout="${level}|${message}${onexception:|${exception:format=type,message,method:maxInnerExceptionLevel=5:innerFormat=shortType,message,method}}|source=${logger}"
+      proxyUrl="http://proxy:8888"
+      proxyUser="username"
+      proxyPassword="secret">
       <!-- Loki requires at least one label associated with the log stream. 
       Make sure you specify at least one label here. -->
       <label name="app" layout="my-app-name" />
@@ -73,6 +76,12 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 - `smallestSize`: supported by .NET 6 or greater only. The compression operation should create output as small as possible, even if the operation takes a longer time to complete.
 
 `label` elements can be used to enrich messages with additional [labels](https://grafana.com/docs/loki/latest/design-documents/labels/). `label/@layout` support usual NLog layout renderers.
+
+`proxyUrl` - URL to the proxy server to use. Must include protocol (http|https) and port. If not specified, then no proxy is used (default `null`).
+
+`proxyUser` - username to use for authentication with proxy.
+
+`proxyPassword` - password to use for authentication with proxy.
 
 ### Async Target
 `NLog.Loki` is an [async target](https://github.com/NLog/NLog/wiki/How-to-write-a-custom-async-target#asynctasktarget-features). You should **not** wrap it in an [AsyncWrapper target](https://github.com/NLog/NLog/wiki/AsyncWrapper-target). The following configuration options are supported. Make sure to adjust them to the expected throughput and criticality of your application's logs, especially the batch size, retry count and task delay.

@@ -38,6 +38,10 @@ public class LokiTarget : AsyncTaskTarget
     /// </summary>
     public CompressionLevel CompressionLevel { get; set; } = CompressionLevel.NoCompression;
 
+    public Layout ProxyUrl { get; set; }
+    public Layout ProxyUser { get; set; }
+    public Layout ProxyPassword { get; set; }
+
     [ArrayParameter(typeof(LokiTargetLabel), "label")]
     public IList<LokiTargetLabel> Labels { get; }
 
@@ -95,6 +99,8 @@ public class LokiTarget : AsyncTaskTarget
         var usr = RenderLogEvent(username, LogEventInfo.CreateNullEvent());
         var pwd = RenderLogEvent(password, LogEventInfo.CreateNullEvent());
 
+        // TODO: render proxy uri, user and password. Handle null case (useProxy).
+
         if(Uri.TryCreate(endpointUri, UriKind.Absolute, out var uri))
         {
             if(uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
@@ -105,8 +111,15 @@ public class LokiTarget : AsyncTaskTarget
         return new NullLokiTransport();
     }
 
-    internal static ILokiHttpClient CreateLokiHttpClient(Uri uri, string username, string password)
+    internal static ILokiHttpClient CreateLokiHttpClient(
+        Uri uri, 
+        string username, 
+        string password,
+        Uri proxyUri,
+        string proxyUser,
+        string userPassword)
     {
+        // Here, inject http proxy settings
         var httpClient = new HttpClient { BaseAddress = uri };
         if(!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
         {
