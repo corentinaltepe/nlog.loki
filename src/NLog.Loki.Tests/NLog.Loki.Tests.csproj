@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;netcoreapp3.1;net480</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net480;net6.0;net7.0</TargetFrameworks>
     <LangVersion>10.0</LangVersion>
     <IsPackable>false</IsPackable>
     <SignAssembly>true</SignAssembly>
