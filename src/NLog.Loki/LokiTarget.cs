@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Compression;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -38,17 +39,21 @@ public class LokiTarget : AsyncTaskTarget
     /// </summary>
     public CompressionLevel CompressionLevel { get; set; } = CompressionLevel.NoCompression;
 
+    public Layout ProxyUrl { get; set; }
+    public Layout ProxyUser { get; set; }
+    public Layout ProxyPassword { get; set; }
+
     [ArrayParameter(typeof(LokiTargetLabel), "label")]
     public IList<LokiTargetLabel> Labels { get; }
 
-    private static Func<Uri, string, string, ILokiHttpClient> LokiHttpClientFactory { get; } = CreateLokiHttpClient;
+    private static Func<Uri, string, string, Uri, string, string, ILokiHttpClient> LokiHttpClientFactory { get; } = CreateLokiHttpClient;
 
     public LokiTarget()
     {
         Labels = new List<LokiTargetLabel>();
 
         _lazyLokiTransport = new Lazy<ILokiTransport>(
-            () => GetLokiTransport(Endpoint, Username, Password, OrderWrites),
+            () => GetLokiTransport(Endpoint, Username, Password, OrderWrites, ProxyUrl, ProxyUser, ProxyPassword),
             LazyThreadSafetyMode.ExecutionAndPublication);
 
         InitializeTarget();
@@ -89,25 +94,78 @@ public class LokiTarget : AsyncTaskTarget
     }
 
     internal ILokiTransport GetLokiTransport(
-        Layout endpoint, Layout username, Layout password, bool orderWrites)
+        Layout endpoint, Layout username, Layout password, bool orderWrites,
+        Layout proxyUrl, Layout proxyUser, Layout proxyPassword)
     {
         var endpointUri = RenderLogEvent(endpoint, LogEventInfo.CreateNullEvent());
         var usr = RenderLogEvent(username, LogEventInfo.CreateNullEvent());
         var pwd = RenderLogEvent(password, LogEventInfo.CreateNullEvent());
+        var pxUser = RenderLogEvent(proxyUser, LogEventInfo.CreateNullEvent());
+        var pxPassword = RenderLogEvent(proxyPassword, LogEventInfo.CreateNullEvent());
+
+        var pxUrl = RenderLogEvent(proxyUrl, LogEventInfo.CreateNullEvent());
+        Uri.TryCreate(pxUrl, UriKind.Absolute, out var pxUri);
 
         if(Uri.TryCreate(endpointUri, UriKind.Absolute, out var uri))
         {
             if(uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
-                return new HttpLokiTransport(LokiHttpClientFactory(uri, usr, pwd), orderWrites, CompressionLevel);
+                return new HttpLokiTransport(
+                    LokiHttpClientFactory(uri, usr, pwd, pxUri, pxUser, pxPassword),
+                    orderWrites,
+                    CompressionLevel);
         }
 
         InternalLogger.Warn("Unable to create a valid Loki Endpoint URI from '{0}'", endpoint);
         return new NullLokiTransport();
     }
 
-    internal static ILokiHttpClient CreateLokiHttpClient(Uri uri, string username, string password)
+    internal static ILokiHttpClient CreateLokiHttpClient(
+        Uri uri,
+        string username,
+        string password,
+        Uri proxyUri,
+        string proxyUser,
+        string proxyPassword)
     {
-        var httpClient = new HttpClient { BaseAddress = uri };
+        // Configure handler for proxy settings
+#if NETCOREAPP
+        var handler = new SocketsHttpHandler();
+#elif NETSTANDARD
+        var handler = new HttpClientHandler();
+#else
+        var handler = new WebRequestHandler();
+#endif
+        handler.UseProxy = proxyUri is not null;
+        if(handler.UseProxy)
+        {
+            var useDefaultCredentials = string.IsNullOrWhiteSpace(proxyUser);
+            handler.Proxy = new WebProxy(proxyUri)
+            {
+                UseDefaultCredentials = useDefaultCredentials
+            };
+            if(!useDefaultCredentials)
+            {
+                var cred = proxyUser.Split('\\');
+                handler.Proxy.Credentials = cred.Length == 1 ?
+                    new NetworkCredential
+                    {
+                        UserName = proxyUser,
+                        Password = proxyPassword ?? string.Empty
+                    }
+                    : new NetworkCredential
+                    {
+                        Domain = cred[0],
+                        UserName = cred[1],
+                        Password = proxyPassword ?? string.Empty
+                    };
+            }
+        }
+
+        // Here, inject http proxy settings
+        var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = uri
+        };
         if(!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password))
         {
             var byteArray = Encoding.ASCII.GetBytes($"{username}:{password}");
