@@ -8,6 +8,7 @@
     <Description>
       An NLog target that sends messages to Loki using Loki's HTTP Push API
     </Description>
+    <PackageTags>NLog;Grafana;Loki;logging;log</PackageTags>
     <Company />
     <Product />
     <Copyright></Copyright>
