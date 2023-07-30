@@ -27,17 +27,17 @@ public class LokiTarget : AsyncTaskTarget
     public Layout Password { get; set; }
 
     /// <summary>
-    /// Orders the logs by timestamp before sending them to Loki.
-    /// Required as <see langword="true"/> before Loki v2.4. Leave as <see langword="false"/> if you are running Loki v2.4 or above.
+    /// Orders the logs by timestamp before sending them to Loki. False by default.
+    /// Required as <see langword="true"/> before Loki v2.4. Leave as <see langword="false"/> if you are running Loki v2.4 or higher.
     /// See <see href="https://grafana.com/docs/loki/latest/configuration/#accept-out-of-order-writes"/>.
     /// </summary>
-    public bool OrderWrites { get; set; } = true;
+    public bool OrderWrites { get; set; } = false;
 
     /// <summary>
     /// Defines if the HTTP messages sent to Loki must be gzip compressed, and with which compression level.
-    /// Possible values: NoCompression (default), Optimal, Fastest and SmallestSize (.NET 6 support only).
+    /// Possible values: NoCompression, Optimal (default), Fastest and SmallestSize (.NET 6 support only).
     /// </summary>
-    public CompressionLevel CompressionLevel { get; set; } = CompressionLevel.NoCompression;
+    public CompressionLevel CompressionLevel { get; set; } = CompressionLevel.Optimal;
 
     public Layout ProxyUrl { get; set; }
     public Layout ProxyUser { get; set; }

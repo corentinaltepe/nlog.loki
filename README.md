@@ -66,9 +66,9 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 
 `username` and `password` are optional fields, used for basic authentication with Loki.
 
-`orderWrites` - Orders the logs by timestamp before sending them to loki when logs are batched in a single HTTP call. This is required if you use Loki v2.3 or lower. But it is not required if you use Loki v2.4 or higher (see [out-of-order writes](https://grafana.com/docs/loki/next/configuration/#accept-out-of-order-writes)). You are strongly advised to set this value to `false` when using Loki v2.4+ since it reduces allocations by about 20% by the serializer (default `true`).
+`orderWrites` - Orders the logs by timestamp before sending them to loki when logs are batched in a single HTTP call. This is required if you use Loki v2.3 or lower. But it is not required if you use Loki v2.4 or higher (see [out-of-order writes](https://grafana.com/docs/loki/next/configuration/#accept-out-of-order-writes)). You are strongly advised to set this value to `false` when using Loki v2.4+ since it reduces allocations by about 20% by the serializer (default `false`).
 
-`compressionLevel` - Gzip compression level applied if any when sending messages to Loki (default `noCompression`). Possible values:
+`compressionLevel` - Gzip compression level applied if any when sending messages to Loki (default `optimal`). Possible values:
 
 - `noCompression`: no compression applied, HTTP header will not specify a Content-Encoding with gzip value.
 - `fastest`: the compression operation should complete as quickly as possible, even if the resulting file is not optimally compressed.
@@ -99,6 +99,19 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 `queueLimit` - Gets or sets the limit on the number of requests in the lazy writer thread request queue (default 10000).
 
 `overflowAction` - Gets or sets the action to be taken when the lazy writer thread request queue count exceeds the set limit (default Discard).
+
+### Upgrading From v1 To v2
+
+The v2 of the library applies _better_ default values for common usage. Check your current configuration and compare it against the breaking
+changes below to adapt to your use case.
+
+#### Breaking Changes
+
+- `compressionLevel` set to `optimal` by default, instead of `noCompression`. If you are certain you do no want compression,
+  specify the value as `noCompression` in your configuration.
+- `orderWrites` set to `false` by default. Set it to `true` only if you run on Loki v2.3 or lower, or if your logs come largely unordered
+  and need to be reordered for Loki to process them.
+- Dropped support for NLog v4, upgraded to NLog v5.
 
 ### Benchmark
 
