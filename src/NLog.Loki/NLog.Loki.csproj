@@ -5,6 +5,9 @@
     <LangVersion>10.0</LangVersion>
     <PackageId>NLog.Targets.Loki</PackageId>
     <Authors>Anton Gogolev, Corentin Altepe</Authors>
+    <Description>
+      An NLog target that sends messages to Loki using Loki's HTTP Push API
+    </Description>
     <Company />
     <Product />
     <Copyright></Copyright>
