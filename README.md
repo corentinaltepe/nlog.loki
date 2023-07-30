@@ -4,7 +4,7 @@
 [![NuGet](https://img.shields.io/nuget/v/NLog.Targets.Loki)](https://www.nuget.org/packages/NLog.Targets.Loki)
 [![codecov](https://codecov.io/gh/corentinaltepe/nlog.loki/branch/master/graph/badge.svg?token=84N5XB4J09)](https://codecov.io/gh/corentinaltepe/nlog.loki)
 
-This is an [NLog](https://nlog-project.org/) target that sends messages to [Loki](https://grafana.com/oss/loki/) using Loki's HTTP Push API. Available on .NET Standard 2.0 (.NET Core 2.0, .NET Framework 4.6.1 and above). For a gRPC client implementation, please use [this target](https://github.com/corentinaltepe/nlog.loki.grpc) instead.
+This is an [NLog](https://nlog-project.org/) target that sends messages to [Loki](https://grafana.com/oss/loki/) using Loki's HTTP Push API. Available on .NET Standard 2.0 (.NET Core 2.0, .NET Framework 4.6.1 and higher). For a gRPC client implementation, please use [this target](https://github.com/corentinaltepe/nlog.loki.grpc) instead.
 
 > Loki is a horizontally-scalable, highly-available, multi-tenant log aggregation system inspired by Prometheus. It is designed to be very cost effective and easy to operate.
 
@@ -66,7 +66,7 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 
 `username` and `password` are optional fields, used for basic authentication with Loki.
 
-`orderWrites` - Orders the logs by timestamp before sending them to loki when logs are batched in a single HTTP call. This is required if you use Loki v2.3 or lower. But it is not required if you use Loki v2.4 or above (see [out-of-order writes](https://grafana.com/docs/loki/next/configuration/#accept-out-of-order-writes)). You are strongly advised to set this value to `false` when using Loki v2.4+ since it reduces allocations by about 20% by the serializer (default `true`).
+`orderWrites` - Orders the logs by timestamp before sending them to loki when logs are batched in a single HTTP call. This is required if you use Loki v2.3 or lower. But it is not required if you use Loki v2.4 or higher (see [out-of-order writes](https://grafana.com/docs/loki/next/configuration/#accept-out-of-order-writes)). You are strongly advised to set this value to `false` when using Loki v2.4+ since it reduces allocations by about 20% by the serializer (default `true`).
 
 `compressionLevel` - Gzip compression level applied if any when sending messages to Loki (default `noCompression`). Possible values:
 
