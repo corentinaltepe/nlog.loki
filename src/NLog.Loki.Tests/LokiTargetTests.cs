@@ -91,7 +91,7 @@ public class LokiTargetTests
 
         var endpoint = Layout.FromString(endpointLayout);
         using var target = new LokiTarget();
-        using var lokiTargetTransport = target.GetLokiTransport(endpoint, null, null, false);
+        using var lokiTargetTransport = target.GetLokiTransport(endpoint, null, null, false, null, null, null);
         return lokiTargetTransport.GetType();
     }
 }
