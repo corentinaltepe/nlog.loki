@@ -91,7 +91,9 @@ public class LokiTargetTests
 
         var endpoint = Layout.FromString(endpointLayout);
         using var target = new LokiTarget();
-        using var lokiTargetTransport = target.GetLokiTransport(endpoint, null, null, false, null, null, null);
+        using var lokiTargetTransport = target.GetLokiTransport(
+            endpoint, null, null, false,
+            "https://myproxy.com", "proxyDomain\\proxyUserA", "proxyPasswordA");
         return lokiTargetTransport.GetType();
     }
 }
