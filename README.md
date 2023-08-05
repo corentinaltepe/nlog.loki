@@ -48,6 +48,21 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
       proxyUrl="http://proxy:8888"
       proxyUser="username"
       proxyPassword="secret">
+
+      <!-- Prefer using a JsonLayout as defined below, instead of using a layout as defined above -->
+      <layout xsi:type="JsonLayout" includeEventProperties="true">
+        <attribute name="level" layout="${level} "/>
+        <attribute name="source" layout="${logger}" />
+        <attribute name="message" layout="${message}" />
+        <attribute name="exception" encode="false">
+          <layout xsi:type="JsonLayout">
+            <attribute name="type" layout="${exception:format=type}" />
+            <attribute name="message" layout="${exception:format=message}" />
+            <attribute name="stacktrace" layout="${exception:format=tostring}" />
+          </layout>
+        </attribute>
+      </layout>
+
       <!-- Loki requires at least one label associated with the log stream. 
       Make sure you specify at least one label here. -->
       <label name="app" layout="my-app-name" />
@@ -77,6 +92,9 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 
 `label` elements can be used to enrich messages with additional [labels](https://grafana.com/docs/loki/latest/design-documents/labels/). `label/@layout` support usual NLog layout renderers.
 
+`layout` - While it is possible to define a simple layout structure in the attributes of the target configuration,
+  prefer using a JsonLayout to structure your logs. This will allow better parsing in Loki.
+
 `proxyUrl` - URL to the proxy server to use. Must include protocol (http|https) and port. If not specified, then no proxy is used (default `null`).
 
 `proxyUser` - username to use for authentication with proxy.
@@ -84,6 +102,7 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 `proxyPassword` - password to use for authentication with proxy.
 
 ### Async Target
+
 `NLog.Loki` is an [async target](https://github.com/NLog/NLog/wiki/How-to-write-a-custom-async-target#asynctasktarget-features). You should **not** wrap it in an [AsyncWrapper target](https://github.com/NLog/NLog/wiki/AsyncWrapper-target). The following configuration options are supported. Make sure to adjust them to the expected throughput and criticality of your application's logs, especially the batch size, retry count and task delay.
 
 `taskTimeoutSeconds` - How many seconds a Task is allowed to run before it is cancelled (default 150 secs).
@@ -112,6 +131,29 @@ changes below to adapt to your use case.
 - `orderWrites` set to `false` by default. Set it to `true` only if you run on Loki v2.3 or lower, or if your logs come largely unordered
   and need to be reordered for Loki to process them.
 - Dropped support for NLog v4, upgraded to NLog v5.
+
+### JSON Layout & Loki Query
+
+The configuration example above structures log messages and event properties in JSON.
+This allows parsing messages in Loki and then applying advanced filtering and querying.
+
+The following query would filter log messages which have a property `JobName` and a value of `A`
+in Loki:
+
+```logql
+{app="my-app-name"}
+| json
+| JobName="A"
+```
+
+These raw messages would look like the following in Loki :
+
+```json
+{ "level": "Info ", "source": "Program", "message": "Executing job \"A\"", "JobName": "A" }
+```
+
+See [Log Queries and Parser Expressions in Loki](https://grafana.com/docs/loki/latest/logql/log_queries/#parser-expression)
+for more details.
 
 ### Benchmark
 
