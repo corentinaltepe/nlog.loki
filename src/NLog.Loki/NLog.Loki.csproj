@@ -6,7 +6,7 @@
     <PackageId>NLog.Targets.Loki</PackageId>
     <Authors>Anton Gogolev, Corentin Altepe</Authors>
     <Description>
-      An NLog target that sends messages to Loki using Loki's HTTP Push API
+      An NLog target that sends messages to Grafana Loki using Grafana Loki's HTTP Push API
     </Description>
     <PackageTags>NLog;Grafana;Loki;logging;log</PackageTags>
     <Company />

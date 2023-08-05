@@ -4,9 +4,9 @@
 [![NuGet](https://img.shields.io/nuget/v/NLog.Targets.Loki)](https://www.nuget.org/packages/NLog.Targets.Loki)
 [![codecov](https://codecov.io/gh/corentinaltepe/nlog.loki/branch/master/graph/badge.svg?token=84N5XB4J09)](https://codecov.io/gh/corentinaltepe/nlog.loki)
 
-This is an [NLog](https://nlog-project.org/) target that sends messages to [Loki](https://grafana.com/oss/loki/) using Loki's HTTP Push API. Available on .NET Standard 2.0 (.NET Core 2.0, .NET Framework 4.6.1 and higher). For a gRPC client implementation, please use [this target](https://github.com/corentinaltepe/nlog.loki.grpc) instead.
+This is an [NLog](https://nlog-project.org/) target that sends messages to [Grafana Loki](https://grafana.com/oss/loki/) using Grafana Loki's HTTP Push API. Available on .NET Standard 2.0 (.NET Core 2.0, .NET Framework 4.6.1 and higher). For a gRPC client implementation, please use [this target](https://github.com/corentinaltepe/nlog.loki.grpc) instead.
 
-> Loki is a horizontally-scalable, highly-available, multi-tenant log aggregation system inspired by Prometheus. It is designed to be very cost effective and easy to operate.
+> Grafana Loki is a horizontally-scalable, highly-available, multi-tenant log aggregation system inspired by Prometheus. It is designed to be very cost effective and easy to operate.
 
 ## Installation
 
@@ -63,7 +63,7 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
         </attribute>
       </layout>
 
-      <!-- Loki requires at least one label associated with the log stream. 
+      <!-- Grafana Loki requires at least one label associated with the log stream. 
       Make sure you specify at least one label here. -->
       <label name="app" layout="my-app-name" />
       <label name="server" layout="${hostname:lowercase=true}" />
@@ -79,11 +79,11 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 
 `endpoint` must resolve to a fully-qualified absolute URL of the Loki Server when running in a [Single Proccess Mode](https://grafana.com/docs/loki/latest/overview/#modes-of-operation) or of the Loki Distributor when running in [Microservices Mode](https://grafana.com/docs/loki/latest/overview/#distributor).
 
-`username` and `password` are optional fields, used for basic authentication with Loki.
+`username` and `password` are optional fields, used for basic authentication with Grafana Loki.
 
-`orderWrites` - Orders the logs by timestamp before sending them to loki when logs are batched in a single HTTP call. This is required if you use Loki v2.3 or lower. But it is not required if you use Loki v2.4 or higher (see [out-of-order writes](https://grafana.com/docs/loki/next/configuration/#accept-out-of-order-writes)). You are strongly advised to set this value to `false` when using Loki v2.4+ since it reduces allocations by about 20% by the serializer (default `false`).
+`orderWrites` - Orders the logs by timestamp before sending them to Grafana loki when logs are batched in a single HTTP call. This is required if you use Loki v2.3 or lower. But it is not required if you use Grafana Loki v2.4 or higher (see [out-of-order writes](https://grafana.com/docs/loki/next/configuration/#accept-out-of-order-writes)). You are strongly advised to set this value to `false` when using Grafana Loki v2.4+ since it reduces allocations by about 20% by the serializer (default `false`).
 
-`compressionLevel` - Gzip compression level applied if any when sending messages to Loki (default `optimal`). Possible values:
+`compressionLevel` - Gzip compression level applied if any when sending messages to Grafana Loki (default `optimal`). Possible values:
 
 - `noCompression`: no compression applied, HTTP header will not specify a Content-Encoding with gzip value.
 - `fastest`: the compression operation should complete as quickly as possible, even if the resulting file is not optimally compressed.
@@ -93,7 +93,7 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 `label` elements can be used to enrich messages with additional [labels](https://grafana.com/docs/loki/latest/design-documents/labels/). `label/@layout` support usual NLog layout renderers.
 
 `layout` - While it is possible to define a simple layout structure in the attributes of the target configuration,
-  prefer using a JsonLayout to structure your logs. This will allow better parsing in Loki.
+  prefer using a JsonLayout to structure your logs. This will allow better parsing in Grafana Loki.
 
 `proxyUrl` - URL to the proxy server to use. Must include protocol (http|https) and port. If not specified, then no proxy is used (default `null`).
 
@@ -128,17 +128,17 @@ changes below to adapt to your use case.
 
 - `compressionLevel` set to `optimal` by default, instead of `noCompression`. If you are certain you do no want compression,
   specify the value as `noCompression` in your configuration.
-- `orderWrites` set to `false` by default. Set it to `true` only if you run on Loki v2.3 or lower, or if your logs come largely unordered
-  and need to be reordered for Loki to process them.
+- `orderWrites` set to `false` by default. Set it to `true` only if you run on Grafana Loki v2.3 or lower, or if your logs come largely unordered
+  and need to be reordered for Grafana Loki to process them.
 - Dropped support for NLog v4, upgraded to NLog v5.
 
 ### JSON Layout & Loki Query
 
 The configuration example above structures log messages and event properties in JSON.
-This allows parsing messages in Loki and then applying advanced filtering and querying.
+This allows parsing messages in Grafana Loki and then applying advanced filtering and querying.
 
 The following query would filter log messages which have a property `JobName` and a value of `A`
-in Loki:
+in Grafana Loki:
 
 ```logql
 {app="my-app-name"}
@@ -146,7 +146,7 @@ in Loki:
 | JobName="A"
 ```
 
-These raw messages would look like the following in Loki :
+These raw messages would look like the following in Grafana Loki :
 
 ```json
 { "level": "Info ", "source": "Program", "message": "Executing job \"A\"", "JobName": "A" }
@@ -157,4 +157,4 @@ for more details.
 
 ### Benchmark
 
-See [NLog.Loki.Benchmarks](https://github.com/corentinaltepe/nlog.loki.benchmark) for benchmark between HTTP and gRPC clients for NLog targets for Loki.
+See [NLog.Loki.Benchmarks](https://github.com/corentinaltepe/nlog.loki.benchmark) for benchmark between HTTP and gRPC clients for NLog targets for Grafana Loki.
