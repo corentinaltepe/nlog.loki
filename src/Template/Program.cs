@@ -11,5 +11,14 @@ while(true)
 {
     logger.Info("Doing some hard work... Iteration {I}.", i++);
     logger.Info("Some additional information {Info1}", "Piece of info 1", new { arg1 = "info2", value = 22 });
+
+    if(i % 10 == 0)
+    {
+        logger.Warn(
+            new Exception("Something went wrong", new Exception("My innerException", new Exception("Inner inner exception"))),
+            "Error while running operation {OperationName}",
+            "Operation A", "Step B");
+    }
+
     await Task.Delay(1000);
 }
