@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -25,6 +26,8 @@ public class LokiTarget : AsyncTaskTarget
     public Layout Username { get; set; }
 
     public Layout Password { get; set; }
+
+    public bool SendLastFormatParameter { get; set; }
 
     /// <summary>
     /// Orders the logs by timestamp before sending them to Loki. False by default.
@@ -79,17 +82,38 @@ public class LokiTarget : AsyncTaskTarget
 
     private LokiEvent GetLokiEvent(LogEventInfo logEvent)
     {
-        var labels = new LokiLabels(RenderAndMapLokiLabels(Labels, logEvent));
+        var labels = new LokiLabels(RenderAndMapLokiLabels(Labels, logEvent, SendLastFormatParameter));
         return new LokiEvent(labels, logEvent.TimeStamp, RenderLogEvent(Layout, logEvent));
     }
 
     private static ISet<LokiLabel> RenderAndMapLokiLabels(
-        IList<LokiTargetLabel> lokiTargetLabels,
-        LogEventInfo logEvent)
+    IList<LokiTargetLabel> lokiTargetLabels,
+    LogEventInfo logEvent,
+    bool sendLastFormatParameter)
     {
         var set = new HashSet<LokiLabel>();
         for(var i = 0; i < lokiTargetLabels.Count; i++)
             _ = set.Add(new LokiLabel(lokiTargetLabels[i].Name, lokiTargetLabels[i].Layout.Render(logEvent)));
+
+        // handle sendLastFormatParameter option; if true last parameter of message format will be sent to loki as separate field per property
+        if(sendLastFormatParameter && logEvent.Parameters != null && logEvent.Parameters.Any())
+        {
+            var lastParameter = logEvent.Parameters.Last();
+            if(lastParameter != null)
+            {
+                foreach(var prop in lastParameter.GetType().GetProperties())
+                {
+                    logEvent.Properties.Add(prop.Name, prop.GetValue(lastParameter));
+                }
+            }
+        }
+
+        // programmer might also want to create fields in loki using event properties
+        foreach(var property in logEvent.Properties)
+        {
+            _ = set.Add(new LokiLabel(property.Key.ToString(), property.Value?.ToString() ?? ""));
+        }
+
         return set;
     }
 
