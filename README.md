@@ -45,6 +45,7 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
       orderWrites="true"
       compressionLevel="noCompression"
       layout="${level}|${message}${onexception:|${exception:format=type,message,method:maxInnerExceptionLevel=5:innerFormat=shortType,message,method}}|source=${logger}"
+      sendLastFormatParameter="false"
       proxyUrl="http://proxy:8888"
       proxyUser="username"
       proxyPassword="secret">
@@ -94,6 +95,25 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 
 `layout` - While it is possible to define a simple layout structure in the attributes of the target configuration,
   prefer using a JsonLayout to structure your logs. This will allow better parsing in Grafana Loki.
+
+`sendLastFormatParameter`: enables the last parameter of a log message format to be sent to Loki as separate fields per property. Like Gelf target, this feature reads custom fields from the log event properties. It significantly streamlines the migration process from Graylog to Loki. Examples:
+
+```csharp
+// using simple anonymous type object to create custom fields for a log entry
+log.Info($"Testing sendLastFormatParameter", new { publisher = "ACME Publisher", releaseDate = DateTime.Now });
+```
+
+```csharp
+// using additional properties to create custom fields for a log entry
+var eventInfo = new LogEventInfo
+{
+    Message = "Testing additional properties inside LogEventInfo",
+    Level = LogLevel.Info,
+};
+eventInfo.Properties.Add("publisher", "ACME Publisher");
+eventInfo.Properties.Add("releaseDate", DateTime.Now);
+log.Log(eventInfo);
+```
 
 `proxyUrl` - URL to the proxy server to use. Must include protocol (http|https) and port. If not specified, then no proxy is used (default `null`).
 
