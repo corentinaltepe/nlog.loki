@@ -10,7 +10,10 @@ int i = 0;
 while(true)
 {
     logger.Info("Doing some hard work... Iteration {I}.", i++);
-    logger.Info("Some additional information {Info1}", "Piece of info 1", new { arg1 = "info2", value = 22 });
+    logger.Info(
+        "Some additional information {Info1}",
+        "Piece of info 1",
+        new { publisher = "ACME Publisher", releaseDate = DateTime.Now });
 
     if(i % 10 == 0)
     {
