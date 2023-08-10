@@ -28,6 +28,7 @@ public class LokiTarget : AsyncTaskTarget
     public Layout Password { get; set; }
 
     public bool SendLastFormatParameter { get; set; }
+    public bool EventPropertiesAsLabels { get; set; }
 
     /// <summary>
     /// Orders the logs by timestamp before sending them to Loki. False by default.
@@ -82,14 +83,15 @@ public class LokiTarget : AsyncTaskTarget
 
     private LokiEvent GetLokiEvent(LogEventInfo logEvent)
     {
-        var labels = new LokiLabels(RenderAndMapLokiLabels(Labels, logEvent, SendLastFormatParameter));
+        var labels = new LokiLabels(RenderAndMapLokiLabels(Labels, logEvent, SendLastFormatParameter, EventPropertiesAsLabels));
         return new LokiEvent(labels, logEvent.TimeStamp, RenderLogEvent(Layout, logEvent));
     }
 
     private static ISet<LokiLabel> RenderAndMapLokiLabels(
     IList<LokiTargetLabel> lokiTargetLabels,
     LogEventInfo logEvent,
-    bool sendLastFormatParameter)
+    bool sendLastFormatParameter,
+    bool eventPropertiesAsLabels)
     {
         var set = new HashSet<LokiLabel>();
         for(var i = 0; i < lokiTargetLabels.Count; i++)
@@ -108,11 +110,13 @@ public class LokiTarget : AsyncTaskTarget
             }
         }
 
-        // programmer might also want to create fields in loki using event properties
-        foreach(var property in logEvent.Properties)
-        {
-            _ = set.Add(new LokiLabel(property.Key.ToString(), property.Value?.ToString() ?? ""));
-        }
+        // programmer might also want to create labels in loki using event properties
+        // This goes against Loki best pratices as it tends to create too many streams.
+        // But the feature was requested twice in a short span so it is included in the library,
+        // with warnings in the readme.
+        if(eventPropertiesAsLabels)
+            foreach(var property in logEvent.Properties)
+                _ = set.Add(new LokiLabel(property.Key.ToString(), property.Value?.ToString() ?? ""));
 
         return set;
     }

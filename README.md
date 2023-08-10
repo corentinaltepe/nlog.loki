@@ -45,6 +45,7 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
       orderWrites="true"
       compressionLevel="noCompression"
       layout="${level}|${message}${onexception:|${exception:format=type,message,method:maxInnerExceptionLevel=5:innerFormat=shortType,message,method}}|source=${logger}"
+      eventPropertiesAsLabels="false"
       sendLastFormatParameter="false"
       proxyUrl="http://proxy:8888"
       proxyUser="username"
@@ -96,7 +97,9 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 `layout` - While it is possible to define a simple layout structure in the attributes of the target configuration,
   prefer using a JsonLayout to structure your logs. This will allow better parsing in Grafana Loki.
 
-`sendLastFormatParameter`: enables the last parameter of a log message format to be sent to Loki as separate fields per property. Example:
+`eventPropertiesAsLabels`: creates one Grafana Loki's label per event property. Beware, this goes against [Grafana Loki's best practices](https://grafana.com/docs/loki/latest/best-practices/) since _Too many label value combinations leads to too many streams._ In order to structure your logs, you are advised to keep away from this feature and to use the `JsonLayout` provided in the example.
+
+`sendLastFormatParameter`: enables the last parameter of a log message format to be sent to Grafana Loki as separate fields per property. Feature `eventPropertiesAsLabels` must be `true` as well. Example:
 
 ```csharp
 // using simple anonymous type object to create custom fields for a log entry
@@ -162,22 +165,6 @@ These raw messages would look like the following in Grafana Loki :
 
 See [Log Queries and Parser Expressions in Loki](https://grafana.com/docs/loki/latest/logql/log_queries/#parser-expression)
 for more details.
-
-### Additional Properties
-
-Like Gelf target, NLog.Loki reads custom fields from the log event properties. It significantly streamlines the migration process from Graylog to Loki. Example:
-
-```csharp
-// using additional properties to create custom fields for a log entry
-var eventInfo = new LogEventInfo
-{
-    Message = "Testing additional properties inside LogEventInfo",
-    Level = LogLevel.Info,
-};
-eventInfo.Properties.Add("publisher", "ACME Publisher");
-eventInfo.Properties.Add("releaseDate", DateTime.Now);
-log.Log(eventInfo);
-```
 
 ### Benchmark
 
