@@ -17,11 +17,11 @@ jobs:
           6.0.x
           7.0.x
     - name: Install Dependencies
-      run: dotnet restore .\\src\\NLog.Loki.sln
+      run: dotnet restore ./src/NLog.Loki.sln
     - name: Build
-      run: dotnet build .\\src\\NLog.Loki.sln --configuration Release --no-restore
+      run: dotnet build ./src/NLog.Loki.sln --configuration Release --no-restore
     - name: Test
-      run: dotnet test .\\src\\NLog.Loki.sln --no-restore --verbosity normal --collect:"XPlat Code Coverage"
+      run: dotnet test ./src/NLog.Loki.sln --no-restore --verbosity normal --collect:"XPlat Code Coverage"
 
     - uses: codecov/codecov-action@v2
       with:
