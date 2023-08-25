@@ -73,7 +73,7 @@ internal sealed class HttpLokiTransport : ILokiTransport
         var content = response.Content == null ? null :
             await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-        InternalLogger.Error("Failed pushing logs to Loki. Code: {Code}. Reason: {Reason}. Message: {Message}.",
+        InternalLogger.Error("LokiTarget: Failed pushing logs to Loki. Code: {0}. Reason: {1}. Message: {2}.",
             response.StatusCode, response.ReasonPhrase, content);
 
 #if NET6_0_OR_GREATER
