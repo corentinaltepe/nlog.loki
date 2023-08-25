@@ -27,7 +27,6 @@ public class LokiTarget : AsyncTaskTarget
 
     public Layout Password { get; set; }
 
-    public bool SendLastFormatParameter { get; set; }
     public bool EventPropertiesAsLabels { get; set; }
 
     /// <summary>
@@ -83,32 +82,18 @@ public class LokiTarget : AsyncTaskTarget
 
     private LokiEvent GetLokiEvent(LogEventInfo logEvent)
     {
-        var labels = new LokiLabels(RenderAndMapLokiLabels(Labels, logEvent, SendLastFormatParameter, EventPropertiesAsLabels));
+        var labels = new LokiLabels(RenderAndMapLokiLabels(Labels, logEvent, EventPropertiesAsLabels));
         return new LokiEvent(labels, logEvent.TimeStamp, RenderLogEvent(Layout, logEvent));
     }
 
     private static ISet<LokiLabel> RenderAndMapLokiLabels(
     IList<LokiTargetLabel> lokiTargetLabels,
     LogEventInfo logEvent,
-    bool sendLastFormatParameter,
     bool eventPropertiesAsLabels)
     {
         var set = new HashSet<LokiLabel>();
         for(var i = 0; i < lokiTargetLabels.Count; i++)
             _ = set.Add(new LokiLabel(lokiTargetLabels[i].Name, lokiTargetLabels[i].Layout.Render(logEvent)));
-
-        // handle sendLastFormatParameter option; if true last parameter of message format will be sent to loki as separate field per property
-        if(sendLastFormatParameter && logEvent.Parameters != null && logEvent.Parameters.Any())
-        {
-            var lastParameter = logEvent.Parameters.Last();
-            if(lastParameter != null)
-            {
-                foreach(var prop in lastParameter.GetType().GetProperties())
-                {
-                    logEvent.Properties.Add(prop.Name, prop.GetValue(lastParameter));
-                }
-            }
-        }
 
         // programmer might also want to create labels in loki using event properties
         // This goes against Loki best pratices as it tends to create too many streams.

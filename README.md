@@ -46,7 +46,6 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
       compressionLevel="noCompression"
       layout="${level}|${message}${onexception:|${exception:format=type,message,method:maxInnerExceptionLevel=5:innerFormat=shortType,message,method}}|source=${logger}"
       eventPropertiesAsLabels="false"
-      sendLastFormatParameter="false"
       proxyUrl="http://proxy:8888"
       proxyUser="username"
       proxyPassword="secret">
@@ -98,13 +97,6 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
   prefer using a JsonLayout to structure your logs. This will allow better parsing in Grafana Loki.
 
 `eventPropertiesAsLabels`: creates one Grafana Loki's label per event property. Beware, this goes against [Grafana Loki's best practices](https://grafana.com/docs/loki/latest/best-practices/) since _Too many label value combinations leads to too many streams._ In order to structure your logs, you are advised to keep away from this feature and to use the `JsonLayout` provided in the example (default `false`).
-
-`sendLastFormatParameter`: enables the last parameter of a log message format to be sent to Grafana Loki as separate fields per property. Feature `eventPropertiesAsLabels` must be `true` as well (default `false`). Example:
-
-```csharp
-// using simple anonymous type object to create custom fields for a log entry
-log.Info($"Testing sendLastFormatParameter", new { publisher = "ACME Publisher", releaseDate = DateTime.Now });
-```
 
 `proxyUrl` - URL to the proxy server to use. Must include protocol (http|https) and port. If not specified, then no proxy is used (default `null`).
 
