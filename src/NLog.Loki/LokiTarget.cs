@@ -143,7 +143,7 @@ public class LokiTarget : AsyncTaskTarget
                     CompressionLevel);
         }
 
-        InternalLogger.Warn("Unable to create a valid Loki Endpoint URI from '{0}'", endpoint);
+        InternalLogger.Warn("LokiTarget: Unable to create a valid Loki Endpoint URI from '{0}'", endpoint);
         return new NullLokiTransport();
     }
 
