@@ -16,7 +16,7 @@
     <DelaySign>false</DelaySign>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.8" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.10" />
     <PackageReference Include="BenchmarkDotNet.Diagnostics.Windows" Version="0.13.8" />
     <PackageReference Include="NLog" Version="5.2.4" />
   </ItemGroup>
