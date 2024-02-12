@@ -59,7 +59,7 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
           <layout xsi:type="JsonLayout">
             <attribute name="type" layout="${exception:format=type}" />
             <attribute name="message" layout="${exception:format=message}" />
-            <attribute name="stacktrace" layout="${exception:format=tostring}" />
+            <attribute name="stacktrace" layout="${exception:format=stacktrace}" />
           </layout>
         </attribute>
       </layout>
