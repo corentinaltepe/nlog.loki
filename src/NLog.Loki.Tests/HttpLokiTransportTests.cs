@@ -44,7 +44,7 @@ public class HttpLokiTransportTests
             {
                 // Intercept the json content so that we can verify it.
                 serializedJsonMessage = await info.Arg<HttpContent>().ReadAsStringAsync().ConfigureAwait(false);
-                Assert.AreEqual("application/json", info.Arg<HttpContent>().Headers.ContentType.MediaType);
+                Assert.That("application/json", Is.EqualTo(info.Arg<HttpContent>().Headers.ContentType.MediaType));
                 return new HttpResponseMessage(HttpStatusCode.OK);
             });
 
@@ -53,9 +53,9 @@ public class HttpLokiTransportTests
         await transport.WriteLogEventsAsync(events).ConfigureAwait(false);
 
         // Verify the json message format
-        Assert.AreEqual(
+        Assert.That(
             "{\"streams\":[{\"stream\":{\"env\":\"unittest\",\"job\":\"Job1\"},\"values\":[[\"1640598506000000000\",\"Info|Receive message from A with destination B.\"],[\"1640598508200000000\",\"Info|Another event has occured here.\"],[\"1640598505100000000\",\"Info|Event from another stream.\"]]}]}",
-            serializedJsonMessage);
+            Is.EqualTo(serializedJsonMessage));
     }
 
     [Test]
@@ -73,7 +73,7 @@ public class HttpLokiTransportTests
             {
                 // Intercept the json content so that we can verify it.
                 serializedJsonMessage = await info.Arg<HttpContent>().ReadAsStringAsync().ConfigureAwait(false);
-                Assert.AreEqual("application/json", info.Arg<HttpContent>().Headers.ContentType.MediaType);
+                Assert.That("application/json", Is.EqualTo(info.Arg<HttpContent>().Headers.ContentType.MediaType));
                 return new HttpResponseMessage(HttpStatusCode.OK);
             });
 
@@ -82,9 +82,9 @@ public class HttpLokiTransportTests
         await transport.WriteLogEventsAsync(events).ConfigureAwait(false);
 
         // Verify the json message format
-        Assert.AreEqual(
+        Assert.That(
             "{\"streams\":[{\"stream\":{\"env\":\"unittest\",\"job\":\"Job1\"},\"values\":[[\"1640598505100000000\",\"Info|Event from another stream.\"],[\"1640598506000000000\",\"Info|Receive message from A with destination B.\"],[\"1640598508200000000\",\"Info|Another event has occured here.\"]]}]}",
-            serializedJsonMessage);
+            Is.EqualTo(serializedJsonMessage));
     }
 
     [Test]
@@ -102,7 +102,7 @@ public class HttpLokiTransportTests
             {
                 // Intercept the json content so that we can verify it.
                 serializedJsonMessage = await info.Arg<HttpContent>().ReadAsStringAsync().ConfigureAwait(false);
-                Assert.AreEqual("application/json", info.Arg<HttpContent>().Headers.ContentType.MediaType);
+                Assert.That("application/json", Is.EqualTo(info.Arg<HttpContent>().Headers.ContentType.MediaType));
                 return new HttpResponseMessage(HttpStatusCode.OK);
             });
 
@@ -111,9 +111,9 @@ public class HttpLokiTransportTests
         await transport.WriteLogEventsAsync(lokiEvent).ConfigureAwait(false);
 
         // Verify the json message format
-        Assert.AreEqual(
+        Assert.That(
             "{\"streams\":[{\"stream\":{\"env\":\"unittest\",\"job\":\"Job1\"},\"values\":[[\"1640598505100000000\",\"Info|Event from another stream.\"]]}]}",
-            serializedJsonMessage);
+            Is.EqualTo(serializedJsonMessage));
     }
 
     [Test]
@@ -127,7 +127,7 @@ public class HttpLokiTransportTests
         // Send the logging request
         var transport = new HttpLokiTransport(httpClient, false, CompressionLevel.NoCompression);
         var exception = Assert.ThrowsAsync<Exception>(() => transport.WriteLogEventsAsync(CreateLokiEvents()));
-        Assert.AreEqual("Something went wrong whem sending HTTP message.", exception.Message);
+        Assert.That("Something went wrong whem sending HTTP message.", Is.EqualTo(exception.Message));
     }
 
     [Test]
@@ -145,10 +145,10 @@ public class HttpLokiTransportTests
         // Send the logging request
         var transport = new HttpLokiTransport(httpClient, false, CompressionLevel.NoCompression);
         var exception = Assert.ThrowsAsync<HttpRequestException>(() => transport.WriteLogEventsAsync(CreateLokiEvents()));
-        Assert.AreEqual("Failed pushing logs to Loki.", exception.Message);
+        Assert.That("Failed pushing logs to Loki.", Is.EqualTo(exception.Message));
 
 #if NET6_0_OR_GREATER
-        Assert.AreEqual(HttpStatusCode.Conflict, exception.StatusCode);
+        Assert.That(HttpStatusCode.Conflict, Is.EqualTo(exception.StatusCode));
 #endif
     }
 
@@ -172,14 +172,14 @@ public class HttpLokiTransportTests
             {
                 // Intercept the gzipped json content so that we can verify it.
                 using var stream = await info.Arg<HttpContent>().ReadAsStreamAsync().ConfigureAwait(false);
-                Assert.True(info.Arg<HttpContent>().Headers.ContentEncoding.Any(s => s == "gzip"));
+                Assert.That(info.Arg<HttpContent>().Headers.ContentEncoding.Any(s => s == "gzip"), Is.True);
                 using var stream2 = new GZipStream(stream, CompressionMode.Decompress);
                 var buffer = new byte[128000];
                 var length = await stream2.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
                 serializedJsonMessage = Encoding.UTF8.GetString(buffer, 0, length);
 
-                Assert.True(info.Arg<HttpContent>().Headers.ContentEncoding.Any(s => s == "gzip"));
-                Assert.AreEqual("application/json", info.Arg<HttpContent>().Headers.ContentType.MediaType);
+                Assert.That(info.Arg<HttpContent>().Headers.ContentEncoding.Any(s => s == "gzip"), Is.True);
+                Assert.That("application/json", Is.EqualTo(info.Arg<HttpContent>().Headers.ContentType.MediaType));
 
                 return new HttpResponseMessage(HttpStatusCode.OK);
             });
@@ -189,8 +189,8 @@ public class HttpLokiTransportTests
         await transport.WriteLogEventsAsync(events).ConfigureAwait(false);
 
         // Verify the json message format
-        Assert.AreEqual(
+        Assert.That(
             "{\"streams\":[{\"stream\":{\"env\":\"unittest\",\"job\":\"Job1\"},\"values\":[[\"1640598506000000000\",\"Info|Receive message from A with destination B.\"],[\"1640598508200000000\",\"Info|Another event has occured here.\"],[\"1640598505100000000\",\"Info|Event from another stream.\"]]}]}",
-            serializedJsonMessage);
+            Is.EqualTo(serializedJsonMessage));
     }
 }
