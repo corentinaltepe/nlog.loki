@@ -23,7 +23,7 @@ jobs:
     - name: Test
       run: dotnet test ./src/NLog.Loki.sln --no-restore --verbosity normal --collect:"XPlat Code Coverage"
 
-    - uses: codecov/codecov-action@v2
+    - uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         directory: ./src/NLog.Loki.Tests/TestResults
