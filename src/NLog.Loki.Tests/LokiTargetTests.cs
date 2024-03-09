@@ -17,7 +17,7 @@ public class LokiTargetTests
         using var lokiTarget = new LokiTarget
         {
             Endpoint = "http://grafana.lvh.me:3100",
-            IncludeMdlc = true,
+            IncludeScopeProperties = true,
             Labels = {
                 new LokiTargetLabel {
                     Name = "env",
@@ -50,12 +50,12 @@ public class LokiTargetTests
 
         for(var n = 0; n < 100; ++n)
         {
-            using(MappedDiagnosticsLogicalContext.SetScoped("env", "dev"))
+            using(ScopeContext.PushProperty("env", "dev"))
             {
                 log.Fatal("Hello world");
             }
 
-            using(MappedDiagnosticsLogicalContext.SetScoped("server", Environment.MachineName))
+            using(ScopeContext.PushProperty("server", Environment.MachineName))
             {
                 log.Info($"hello again {n}");
 
@@ -63,7 +63,7 @@ public class LokiTargetTests
                 log.Warn($"hello again {n * 3}");
             }
 
-            using(MappedDiagnosticsLogicalContext.SetScoped("cfg", "v1"))
+            using(ScopeContext.PushProperty("cfg", "v1"))
                 log.Error($"hello again {n * 4}");
 
             try
