@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+//using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,6 +28,8 @@ public class LokiTarget : AsyncTaskTarget
 
     public Layout Password { get; set; }
 
+    public Layout Tenant { get; set; }
+
     public bool EventPropertiesAsLabels { get; set; }
 
     /// <summary>
@@ -49,14 +52,16 @@ public class LokiTarget : AsyncTaskTarget
     [ArrayParameter(typeof(LokiTargetLabel), "label")]
     public IList<LokiTargetLabel> Labels { get; }
 
-    private static Func<Uri, string, string, Uri, string, string, ILokiHttpClient> LokiHttpClientFactory { get; } = CreateLokiHttpClient;
+    private static Func<Uri, string, string, string, Uri, string, string, ILokiHttpClient> LokiHttpClientFactory { get; } = CreateLokiHttpClient;
+
+    private const string TenantHeader = "X-Scope-OrgID";
 
     public LokiTarget()
     {
         Labels = new List<LokiTargetLabel>();
 
         _lazyLokiTransport = new Lazy<ILokiTransport>(
-            () => GetLokiTransport(Endpoint, Username, Password, OrderWrites, ProxyUrl, ProxyUser, ProxyPassword),
+            () => GetLokiTransport(Endpoint, Tenant, Username, Password, OrderWrites, ProxyUrl, ProxyUser, ProxyPassword),
             LazyThreadSafetyMode.ExecutionAndPublication);
 
         InitializeTarget();
@@ -107,10 +112,11 @@ public class LokiTarget : AsyncTaskTarget
     }
 
     internal ILokiTransport GetLokiTransport(
-        Layout endpoint, Layout username, Layout password, bool orderWrites,
+        Layout endpoint, Layout tenant, Layout username, Layout password, bool orderWrites,
         Layout proxyUrl, Layout proxyUser, Layout proxyPassword)
     {
         var endpointUri = RenderLogEvent(endpoint, LogEventInfo.CreateNullEvent());
+        var tnt = RenderLogEvent(tenant, LogEventInfo.CreateNullEvent());
         var usr = RenderLogEvent(username, LogEventInfo.CreateNullEvent());
         var pwd = RenderLogEvent(password, LogEventInfo.CreateNullEvent());
         var pxUser = RenderLogEvent(proxyUser, LogEventInfo.CreateNullEvent());
@@ -123,7 +129,7 @@ public class LokiTarget : AsyncTaskTarget
         {
             if(uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
                 return new HttpLokiTransport(
-                    LokiHttpClientFactory(uri, usr, pwd, pxUri, pxUser, pxPassword),
+                    LokiHttpClientFactory(uri, tnt, usr, pwd, pxUri, pxUser, pxPassword),
                     orderWrites,
                     CompressionLevel);
         }
@@ -134,6 +140,7 @@ public class LokiTarget : AsyncTaskTarget
 
     internal static ILokiHttpClient CreateLokiHttpClient(
         Uri uri,
+        string tenant,
         string username,
         string password,
         Uri proxyUri,
@@ -183,6 +190,13 @@ public class LokiTarget : AsyncTaskTarget
         {
             var byteArray = Encoding.ASCII.GetBytes($"{username}:{password}");
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+        }
+        if(!string.IsNullOrEmpty(tenant))
+        {
+            if(!httpClient.DefaultRequestHeaders.Any(h => h.Key == TenantHeader))
+            {
+                httpClient.DefaultRequestHeaders.Add(TenantHeader, tenant);
+            }
         }
         return new LokiHttpClient(httpClient);
     }
