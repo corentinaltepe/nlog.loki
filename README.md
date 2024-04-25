@@ -40,13 +40,13 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
       batchSize="200"
       taskDelayMilliseconds="500"
       endpoint="http://localhost:3100"
-      tenant="tenantid"
       username="myusername"
       password="secret"
       orderWrites="true"
       compressionLevel="noCompression"
       layout="${level}|${message}${onexception:|${exception:format=type,message,method:maxInnerExceptionLevel=5:innerFormat=shortType,message,method}}|source=${logger}"
       eventPropertiesAsLabels="false"
+      tenant="tenantid"
       proxyUrl="http://proxy:8888"
       proxyUser="username"
       proxyPassword="secret">
@@ -98,6 +98,8 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
   prefer using a JsonLayout to structure your logs. This will allow better parsing in Grafana Loki.
 
 `eventPropertiesAsLabels`: creates one Grafana Loki's label per event property. Beware, this goes against [Grafana Loki's best practices](https://grafana.com/docs/loki/latest/best-practices/) since _Too many label value combinations leads to too many streams._ In order to structure your logs, you are advised to keep away from this feature and to use the `JsonLayout` provided in the example (default `false`).
+
+`tenant` - Tenant ID for a multi-tenant configuration. See [Grafana Loki's Multi-tenant documentation](https://grafana.com/docs/loki/latest/operations/multi-tenancy/#multi-tenancy). If specified, applied as `X-Scope-OrgID` HTTP Header on requests sent to Loki.
 
 `proxyUrl` - URL to the proxy server to use. Must include protocol (http|https) and port. If not specified, then no proxy is used (default `null`).
 
