@@ -40,6 +40,7 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
       batchSize="200"
       taskDelayMilliseconds="500"
       endpoint="http://localhost:3100"
+      tenant="tenantid"
       username="myusername"
       password="secret"
       orderWrites="true"
