@@ -53,7 +53,7 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 
       <!-- Prefer using a JsonLayout as defined below, instead of using a layout as defined above -->
       <layout xsi:type="JsonLayout" includeEventProperties="true">
-        <attribute name="level" layout="${level} "/>
+        <attribute name="level" layout="${level}" />
         <attribute name="source" layout="${logger}" />
         <attribute name="message" layout="${message}" />
         <attribute name="exception" encode="false">
