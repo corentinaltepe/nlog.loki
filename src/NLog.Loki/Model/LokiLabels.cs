@@ -36,9 +36,7 @@ internal class LokiLabels : IEquatable<LokiLabels>
             return false;
         if(ReferenceEquals(this, other))
             return true;
-        if(other.GetType() != this.GetType())
-            return false;
-        return Equals((LokiLabels)other);
+        return Equals(other as LokiLabels);
     }
 
     public override int GetHashCode()

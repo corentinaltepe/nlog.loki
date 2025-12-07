@@ -4,7 +4,6 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-//using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +19,7 @@ namespace NLog.Loki;
 public class LokiTarget : AsyncTaskTarget
 {
     private static readonly LokiLabels EmptyLabels = new LokiLabels(new HashSet<LokiLabel>());
+    private LokiLabels _defaultStaticLabels = null;
     private readonly Lazy<ILokiTransport> _lazyLokiTransport;
 
     [RequiredParameter]
@@ -51,7 +51,7 @@ public class LokiTarget : AsyncTaskTarget
     public Layout ProxyPassword { get; set; }
 
     [ArrayParameter(typeof(LokiTargetLabel), "label")]
-    public IList<LokiTargetLabel> Labels { get; }
+    public IList<LokiTargetLabel> Labels { get; } = new List<LokiTargetLabel>();
 
     private static Func<Uri, string, string, string, Uri, string, string, ILokiHttpClient> LokiHttpClientFactory { get; } = CreateLokiHttpClient;
 
@@ -59,13 +59,15 @@ public class LokiTarget : AsyncTaskTarget
 
     public LokiTarget()
     {
-        Labels = new List<LokiTargetLabel>();
-
         _lazyLokiTransport = new Lazy<ILokiTransport>(
             () => GetLokiTransport(Endpoint, Tenant, Username, Password, OrderWrites, ProxyUrl, ProxyUser, ProxyPassword),
             LazyThreadSafetyMode.ExecutionAndPublication);
+    }
 
-        InitializeTarget();
+    protected override void InitializeTarget()
+    {
+        base.InitializeTarget();
+        _defaultStaticLabels = ResolveDefaultStaticLabels(Labels, EventPropertiesAsLabels);
     }
 
     protected override Task WriteAsyncTask(LogEventInfo logEvent, CancellationToken cancellationToken)
@@ -91,7 +93,7 @@ public class LokiTarget : AsyncTaskTarget
 
     private LokiEvent GetLokiEvent(LogEventInfo logEvent)
     {
-        var labels = RenderAndMapLokiLabels(Labels, logEvent, EventPropertiesAsLabels);
+        var labels = _defaultStaticLabels ?? RenderAndMapLokiLabels(Labels, logEvent, EventPropertiesAsLabels);
         return new LokiEvent(labels, logEvent.TimeStamp, RenderLogEvent(Layout, logEvent));
     }
 
@@ -125,6 +127,35 @@ public class LokiTarget : AsyncTaskTarget
         }
 
         return new LokiLabels(set);
+    }
+
+    private static LokiLabels ResolveDefaultStaticLabels(IList<LokiTargetLabel> lokiTargetLabels, bool eventPropertiesAsLabels)
+    {
+        if(eventPropertiesAsLabels)
+            return null;
+
+        if(lokiTargetLabels.Count == 0)
+            return EmptyLabels;
+
+        var hashSet = new HashSet<LokiLabel>();
+        foreach(var label in lokiTargetLabels)
+        {
+            if(string.IsNullOrWhiteSpace(label.Name))
+            {
+                InternalLogger.Warn("LokiTarget: One of the labels has an empty name. This may cause issues when sending logs to Loki.");
+            }
+
+            if(label.Layout is SimpleLayout simpleLayout && simpleLayout.IsFixedText)
+            {
+                hashSet.Add(new LokiLabel(label.Name, simpleLayout.FixedText));
+            }
+            else
+            {
+                return null;    // Not static labels
+            }
+        }
+
+        return new LokiLabels(hashSet);
     }
 
     internal ILokiTransport GetLokiTransport(
