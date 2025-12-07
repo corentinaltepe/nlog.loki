@@ -1,7 +1,6 @@
 using System;
 using NLog.Config;
 using NLog.Layouts;
-using NLog.Targets.Wrappers;
 using NUnit.Framework;
 
 namespace NLog.Loki.Tests;
@@ -9,10 +8,13 @@ namespace NLog.Loki.Tests;
 [TestFixture]
 public class LokiTargetTests
 {
-    [Test]
-    public void Write()
+    [TestCase(true)]
+    [TestCase(false)]
+    public void Write(bool dynamicTargetLabels)
     {
-        var configuration = new LoggingConfiguration();
+        using var logFactory = new LogFactory();
+
+        var configuration = new LoggingConfiguration(logFactory);
 
         using var lokiTarget = new LokiTarget
         {
@@ -27,44 +29,29 @@ public class LokiTargetTests
                     Name = "server",
                     Layout = Layout.FromString("${machinename:lowercase=true}")
                 },
-                new LokiTargetLabel {
-                    Name = "level",
-                    Layout = Layout.FromString("${level:lowercase=true}")
-                }
             }
         };
-
-        var target = new BufferingTargetWrapper(lokiTarget)
+        if (dynamicTargetLabels)
         {
-            BufferSize = 500
-        };
+            lokiTarget.Labels.Add(new LokiTargetLabel
+            {
+                Name = "level",
+                Layout = Layout.FromString("${level:lowercase=true}")
+            });
+        }
 
-        configuration.AddTarget("loki", target);
+        configuration.AddTarget("loki", lokiTarget);
 
-        var rule = new LoggingRule("*", LogLevel.Debug, target);
+        var rule = new LoggingRule("*", LogLevel.Debug, lokiTarget);
         configuration.LoggingRules.Add(rule);
 
-        LogManager.Configuration = configuration;
+        logFactory.Configuration = configuration;
 
-        var log = LogManager.GetLogger(typeof(LokiTargetTests).FullName);
+        var log = logFactory.GetLogger(typeof(LokiTargetTests).FullName);
 
         for(var n = 0; n < 100; ++n)
         {
-            using(ScopeContext.PushProperty("env", "dev"))
-            {
-                log.Fatal("Hello world");
-            }
-
-            using(ScopeContext.PushProperty("server", Environment.MachineName))
-            {
-                log.Info($"hello again {n}");
-
-                log.Info($"hello again {n * 2}");
-                log.Warn($"hello again {n * 3}");
-            }
-
-            using(ScopeContext.PushProperty("cfg", "v1"))
-                log.Error($"hello again {n * 4}");
+            log.Info("Hello world {0}", n);
 
             try
             {
@@ -76,7 +63,7 @@ public class LokiTargetTests
             }
         }
 
-        LogManager.Shutdown();
+        logFactory.Shutdown();
     }
 
     [Test]
