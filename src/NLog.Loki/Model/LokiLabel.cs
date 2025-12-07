@@ -2,7 +2,7 @@ using System;
 
 namespace NLog.Loki.Model;
 
-internal class LokiLabel : IEquatable<LokiLabel>
+internal readonly struct LokiLabel : IEquatable<LokiLabel>
 {
     public string Label { get; }
 
@@ -16,20 +16,12 @@ internal class LokiLabel : IEquatable<LokiLabel>
 
     public bool Equals(LokiLabel other)
     {
-        if(ReferenceEquals(null, other))
-            return false;
-        if(ReferenceEquals(this, other))
-            return true;
         return Label == other.Label && Value == other.Value;
     }
 
     public override bool Equals(object other)
     {
-        if(ReferenceEquals(null, other))
-            return false;
-        if(ReferenceEquals(this, other))
-            return true;
-        return Equals(other as LokiLabel);
+        return other is LokiLabel lokiLabel && Equals(lokiLabel);
     }
 
     public override int GetHashCode()
