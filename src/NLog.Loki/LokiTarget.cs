@@ -19,6 +19,7 @@ namespace NLog.Loki;
 [Target("loki")]
 public class LokiTarget : AsyncTaskTarget
 {
+    private static readonly LokiLabels EmptyLabels = new LokiLabels(new HashSet<LokiLabel>());
     private readonly Lazy<ILokiTransport> _lazyLokiTransport;
 
     [RequiredParameter]
@@ -75,6 +76,9 @@ public class LokiTarget : AsyncTaskTarget
 
     protected override Task WriteAsyncTask(IList<LogEventInfo> logEvents, CancellationToken cancellationToken)
     {
+        if (logEvents.Count == 1)
+            return WriteAsyncTask(logEvents[0], cancellationToken); // Skip allocating yield engine
+
         var events = GetLokiEvents(logEvents);
         return _lazyLokiTransport.Value.WriteLogEventsAsync(events);
     }
@@ -87,28 +91,40 @@ public class LokiTarget : AsyncTaskTarget
 
     private LokiEvent GetLokiEvent(LogEventInfo logEvent)
     {
-        var labels = new LokiLabels(RenderAndMapLokiLabels(Labels, logEvent, EventPropertiesAsLabels));
+        var labels = RenderAndMapLokiLabels(Labels, logEvent, EventPropertiesAsLabels);
         return new LokiEvent(labels, logEvent.TimeStamp, RenderLogEvent(Layout, logEvent));
     }
 
-    private static ISet<LokiLabel> RenderAndMapLokiLabels(
+    private LokiLabels RenderAndMapLokiLabels(
     IList<LokiTargetLabel> lokiTargetLabels,
     LogEventInfo logEvent,
     bool eventPropertiesAsLabels)
     {
+        var labelCount = lokiTargetLabels.Count;
+        if(eventPropertiesAsLabels && logEvent.HasProperties)
+            labelCount += logEvent.Properties.Count;
+        if(labelCount == 0)
+            return EmptyLabels;
+
+#if NETSTANDARD || NETFRAMEWORK
         var set = new HashSet<LokiLabel>();
+#else
+        var set = new HashSet<LokiLabel>(labelCount);
+#endif
         for(var i = 0; i < lokiTargetLabels.Count; i++)
-            _ = set.Add(new LokiLabel(lokiTargetLabels[i].Name, lokiTargetLabels[i].Layout.Render(logEvent)));
+            _ = set.Add(new LokiLabel(lokiTargetLabels[i].Name, RenderLogEvent(lokiTargetLabels[i].Layout, logEvent)));
 
         // programmer might also want to create labels in loki using event properties
         // This goes against Loki best pratices as it tends to create too many streams.
         // But the feature was requested twice in a short span so it is included in the library,
         // with warnings in the readme.
-        if(eventPropertiesAsLabels)
+        if(eventPropertiesAsLabels && logEvent.HasProperties)
+        {
             foreach(var property in logEvent.Properties)
                 _ = set.Add(new LokiLabel(property.Key.ToString(), property.Value?.ToString() ?? ""));
+        }
 
-        return set;
+        return new LokiLabels(set);
     }
 
     internal ILokiTransport GetLokiTransport(
