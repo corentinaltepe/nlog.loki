@@ -31,18 +31,37 @@ internal sealed class HttpLokiTransport : ILokiTransport
         _jsonOptions.Converters.Add(new LokiEventSerializer());
     }
 
-    public async Task WriteLogEventsAsync(IEnumerable<LokiEvent> lokiEvents)
+    public Task WriteLogEventsAsync(IEnumerable<LokiEvent> lokiEvents)
     {
-        using var jsonStreamContent = CreateContent(lokiEvents);
-        using var response = await _lokiHttpClient.PostAsync("loki/api/v1/push", jsonStreamContent).ConfigureAwait(false);
-        await ValidateHttpResponse(response).ConfigureAwait(false);
+        return PushToLoki(CreateContent(lokiEvents));
     }
 
-    public async Task WriteLogEventsAsync(LokiEvent lokiEvent)
+    public Task WriteLogEventsAsync(LokiEvent lokiEvent)
     {
-        using var jsonStreamContent = CreateContent(lokiEvent);
-        using var response = await _lokiHttpClient.PostAsync("loki/api/v1/push", jsonStreamContent).ConfigureAwait(false);
-        await ValidateHttpResponse(response).ConfigureAwait(false);
+        return PushToLoki(CreateContent(lokiEvent));
+    }
+
+    private async Task PushToLoki(HttpContent jsonStreamContent)
+    {
+        using(jsonStreamContent)
+        {
+            using var response = await _lokiHttpClient.PostAsync("loki/api/v1/push", jsonStreamContent).ConfigureAwait(false);
+            if(response.IsSuccessStatusCode)
+                return;
+
+            // Read the response's content
+            var content = response.Content == null ? null :
+                await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            InternalLogger.Error("LokiTarget: Failed pushing logs to Loki. Code: {0}. Reason: {1}. Message: {2}.",
+                response.StatusCode, response.ReasonPhrase, content);
+
+#if NET6_0_OR_GREATER
+            throw new HttpRequestException("Failed pushing logs to Loki.", inner: null, response.StatusCode);
+#else
+            throw new HttpRequestException("Failed pushing logs to Loki.");
+#endif
+        }
     }
 
     /// <summary>
@@ -62,25 +81,6 @@ internal sealed class HttpLokiTransport : ILokiTransport
             return jsonContent;
 
         return new CompressedContent(jsonContent, _gzipLevel);
-    }
-
-    private static async ValueTask ValidateHttpResponse(HttpResponseMessage response)
-    {
-        if(response.IsSuccessStatusCode)
-            return;
-
-        // Read the response's content
-        var content = response.Content == null ? null :
-            await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-        InternalLogger.Error("LokiTarget: Failed pushing logs to Loki. Code: {0}. Reason: {1}. Message: {2}.",
-            response.StatusCode, response.ReasonPhrase, content);
-
-#if NET6_0_OR_GREATER
-                throw new HttpRequestException("Failed pushing logs to Loki.", inner: null, response.StatusCode);
-#else
-        throw new HttpRequestException("Failed pushing logs to Loki.");
-#endif
     }
 
     public void Dispose()

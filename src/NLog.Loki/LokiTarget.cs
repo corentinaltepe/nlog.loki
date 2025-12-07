@@ -148,12 +148,10 @@ public class LokiTarget : AsyncTaskTarget
         string proxyPassword)
     {
         // Configure handler for proxy settings
-#if NETCOREAPP
-        var handler = new SocketsHttpHandler();
-#elif NETSTANDARD
+#if NETSTANDARD || NETFRAMEWORK
         var handler = new HttpClientHandler();
 #else
-        var handler = new WebRequestHandler();
+        var handler = new SocketsHttpHandler();
 #endif
         handler.UseProxy = proxyUri is not null;
         if(handler.UseProxy)
