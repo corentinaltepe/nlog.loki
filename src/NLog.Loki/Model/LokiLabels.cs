@@ -7,9 +7,9 @@ internal class LokiLabels : IEquatable<LokiLabels>
 {
     private readonly int _hashCode;
 
-    public ISet<LokiLabel> Labels { get; }
+    public HashSet<LokiLabel> Labels { get; }
 
-    public LokiLabels(ISet<LokiLabel> labels)
+    public LokiLabels(HashSet<LokiLabel> labels)
     {
         Labels = labels;
         unchecked

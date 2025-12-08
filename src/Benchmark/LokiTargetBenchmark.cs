@@ -69,7 +69,7 @@ public class LokiTargetBenchmark
         return new LokiEvent(labels, logEvent.TimeStamp, logEvent.ToString());
     }
 
-    private static ISet<LokiLabel> RenderAndMapLokiLabels(
+    private static HashSet<LokiLabel> RenderAndMapLokiLabels(
         IList<LokiTargetLabel> lokiTargetLabels,
         LogEventInfo logEvent)
     {
