@@ -194,6 +194,8 @@ public class LokiTarget : AsyncTaskTarget
         string proxyUser,
         string proxyPassword)
     {
+        InternalLogger.Debug("LogiTarget: Creating HttpClient to Loki Endpoint: {0}", uri);
+
         // Configure handler for proxy settings
 #if NETSTANDARD || NETFRAMEWORK
         var handler = new HttpClientHandler();
