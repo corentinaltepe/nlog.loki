@@ -35,7 +35,7 @@ public class LokiTargetTests
         {
             lokiTarget.Labels.Add(new LokiTargetLabel
             {
-                Name = "level",
+                Name = "name",
                 Layout = Layout.FromString("${level:lowercase=true}")
             });
         }
