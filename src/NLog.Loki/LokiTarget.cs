@@ -135,27 +135,64 @@ public class LokiTarget : AsyncTaskTarget
             return null;
 
         if(lokiTargetLabels.Count == 0)
+        {
+            InternalLogger.Info("LokiTarget: No labels configured. This might cause issues when sending logs to Loki.");
             return EmptyLabels;
+        }
 
-        var hashSet = new HashSet<LokiLabel>();
+        // https://grafana.com/docs/loki/latest/get-started/labels/
+        var serviceNameLabels = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "name",
+            "service",
+            "service_name",
+            "app",
+            "application",
+            "application_name",
+            "container",
+            "container_name",
+            "component",
+            "workload",
+            "job",
+        };
+
+        var staticLabels = new HashSet<LokiLabel>();
         foreach(var label in lokiTargetLabels)
         {
             if(string.IsNullOrWhiteSpace(label.Name))
             {
-                InternalLogger.Warn("LokiTarget: One of the labels has an empty name. This may cause issues when sending logs to Loki.");
+                InternalLogger.Info("LokiTarget: Invalid label name '{0}'. This might cause issues when sending logs to Loki.", label.Name);
+            }
+            else if(!label.Name.All(chr => ('a' <= chr && chr <= 'z') || ('A' <= chr && chr <= 'Z') || ('0' <= chr && chr <= '9') || chr == '_' || chr == ':'))
+            {
+                InternalLogger.Info("LokiTarget: Invalid label name '{0}'. This might cause issues when sending logs to Loki.", label.Name);
+            }
+            else if (serviceNameLabels?.Contains(label.Name) == true)
+            {
+                serviceNameLabels = null;   // Found valid label for service_name
             }
 
             if(label.Layout is SimpleLayout simpleLayout && simpleLayout.IsFixedText)
             {
-                hashSet.Add(new LokiLabel(label.Name, simpleLayout.FixedText));
+                if(string.IsNullOrWhiteSpace(simpleLayout.FixedText))
+                {
+                    InternalLogger.Info("LokiTarget: Label name '{0}' has empty value. This might cause issues when sending logs to Loki.", label.Name);
+                }
+
+                staticLabels?.Add(new LokiLabel(label.Name, simpleLayout.FixedText));
             }
             else
             {
-                return null;    // Not static labels
+                staticLabels = null; // Labels are not static
             }
         }
 
-        return new LokiLabels(hashSet);
+        if (serviceNameLabels != null)
+        {
+            InternalLogger.Info("LokiTarget: No label found to resolve service_name. This might cause issues when sending logs to Loki.");
+        }
+
+        return staticLabels != null ? new LokiLabels(staticLabels) : null;
     }
 
     internal ILokiTransport GetLokiTransport(
