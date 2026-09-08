@@ -44,7 +44,7 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
       password="secret"
       orderWrites="true"
       compressionLevel="noCompression"
-      layout="${level}|${message}${onexception:|${exception:format=type,message,method:maxInnerExceptionLevel=5:innerFormat=shortType,message,method}}|source=${logger}"
+      layout="${level}|${message:withException=true}|source=${logger}"
       eventPropertiesAsLabels="false"
       tenant="tenantid"
       proxyUrl="http://proxy:8888"
