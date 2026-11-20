@@ -37,8 +37,8 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
     <target 
       name="loki" 
       xsi:type="loki"
-      batchSize="200"
-      taskDelayMilliseconds="500"
+      batchSize="100"
+      taskDelayMilliseconds="1"
       endpoint="http://localhost:3100"
       username="myusername"
       password="secret"
@@ -120,9 +120,9 @@ Under .NET Core, [remember to register](https://github.com/nlog/nlog/wiki/Regist
 
 `retryDelayMilliseconds` - How many milliseconds to wait before next retry (default 500ms, and will be doubled on each retry).
 
-`retryCount` - How many attempts to retry the same Task, before it is aborted (default 0, meaning no retry).
+`retryCount` - How many attempts to retry the same Task, before it is aborted (default 3, and 0 means no retry).
 
-`batchSize` - Gets or sets the number of log events that should be processed in a batch by the lazy writer thread (default 1).
+`batchSize` - Gets or sets the number of log events that should be processed in a batch by the lazy writer thread (default 100).
 
 `taskDelayMilliseconds` - How many milliseconds to delay the actual write operation to optimize for batching (default 1 ms).
 

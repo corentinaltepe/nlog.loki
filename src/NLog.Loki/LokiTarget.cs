@@ -92,6 +92,9 @@ public class LokiTarget : AsyncTaskTarget
 
     public LokiTarget()
     {
+        BatchSize = 100;
+        RetryCount = 3;
+
         _lazyLokiTransport = new Lazy<ILokiTransport>(
             () => GetLokiTransport(),
             LazyThreadSafetyMode.ExecutionAndPublication);
